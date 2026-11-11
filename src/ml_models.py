@@ -46,8 +46,13 @@ def validation_mae_scale(actual_usd: np.ndarray, predicted_log: np.ndarray) -> f
     return float(ratios[order[np.searchsorted(cumulative, cumulative[-1] / 2.0, side="left")]])
 
 
+def excluded_features() -> set[str]:
+    """Numeric features removed from every model (config: study.excluded_features)."""
+    return set(CFG["study"].get("excluded_features") or [])
+
+
 def feature_columns(drop_groups: list[str] | None = None) -> tuple[list[str], list[str]]:
-    dropped = set()
+    dropped = set(excluded_features())
     for group in drop_groups or []:
         dropped.update(FEATURE_GROUPS.get(group, []))
     nums = [c for c in NUMERIC_FEATURES if c not in dropped]
@@ -64,6 +69,27 @@ def make_preprocessor(train: pd.DataFrame, drop_groups: list[str] | None = None,
     categorical = Pipeline([("impute", SimpleImputer(strategy="most_frequent")),
                              ("onehot", OneHotEncoder(handle_unknown="ignore", sparse_output=True, dtype=np.float32))])
     return ColumnTransformer([("numeric", numeric, nums), ("category", categorical, cats)], remainder="drop", sparse_threshold=0.3)
+
+
+def lightgbm_bagging_params() -> dict:
+    """Row/column subsampling for LightGBM from config.
+
+    Without subsampling (subsample=1, subsample_freq=0, colsample_bytree=1) LightGBM is deterministic
+    and random_state has no effect, so several seeds give identical models. Returns {} in that case so
+    the archived parameter dictionaries are reproduced exactly.
+    """
+    c = CFG["compute"]
+    sub, freq, col = float(c.get("lightgbm_subsample", 1.0)), int(c.get("lightgbm_subsample_freq", 0)), float(c.get("lightgbm_colsample_bytree", 1.0))
+    if not (0 < sub <= 1 and 0 < col <= 1 and freq >= 0):
+        raise ValueError(f"Invalid LightGBM subsampling settings: subsample={sub}, freq={freq}, colsample={col}")
+    if sub < 1 and freq == 0:
+        raise ValueError("lightgbm_subsample < 1 has no effect unless lightgbm_subsample_freq > 0")
+    out = {}
+    if sub < 1:
+        out.update(subsample=sub, subsample_freq=freq)
+    if col < 1:
+        out.update(colsample_bytree=col)
+    return out
 
 
 def model_configs(kind: str, classification: bool = False, n_trials: int | None = None) -> list[dict]:
@@ -88,11 +114,13 @@ def model_configs(kind: str, classification: bool = False, n_trials: int | None 
                  "tree_method": "hist", "objective": "reg:squarederror"} for d in [4, 6, 8]][:n]
     if kind == "LightGBM":
         rounds = int(CFG["compute"]["boosting_rounds"])
+        bagging = lightgbm_bagging_params()
         if classification:
             return [{"n_estimators": rounds, "num_leaves": leaves, "learning_rate": 0.05, "max_depth": -1,
-                     "min_child_samples": 40, "class_weight": "balanced", "n_jobs": threads, "verbosity": -1} for leaves in [15, 31, 63]][:n]
+                     "min_child_samples": 40, "class_weight": "balanced", "n_jobs": threads, "verbosity": -1, **bagging}
+                    for leaves in [15, 31, 63]][:n]
         return [{"n_estimators": rounds, "num_leaves": leaves, "learning_rate": 0.05, "max_depth": -1,
-                 "min_child_samples": 40, "n_jobs": threads, "verbosity": -1} for leaves in [15, 31, 63]][:n]
+                 "min_child_samples": 40, "n_jobs": threads, "verbosity": -1, **bagging} for leaves in [15, 31, 63]][:n]
     raise ValueError(kind)
 
 

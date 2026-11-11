@@ -12,7 +12,8 @@ from temporal_validation import NUMERIC_FEATURES, CATEGORICAL_FEATURES
 
 
 def _design(train: pd.DataFrame, test: pd.DataFrame | None = None):
-    nums = [c for c in NUMERIC_FEATURES if c in train.columns]
+    excluded = set(CFG["study"].get("excluded_features") or [])
+    nums = [c for c in NUMERIC_FEATURES if c in train.columns and c not in excluded]
     cats = [c for c in CATEGORICAL_FEATURES if c in train.columns]
     imputer = SimpleImputer(strategy="median", add_indicator=True, keep_empty_features=True)
     xnum = imputer.fit_transform(train[nums]).astype(float)
@@ -36,7 +37,9 @@ def fit_ppml(train: pd.DataFrame, test: pd.DataFrame, maxiter: int | None = None
         raise ValueError("PPML requires finite nonnegative outcomes")
     # Log-link Poisson pseudo-maximum likelihood with a small L2 penalty to stabilize
     # the many destination/product indicators and avoid separated zero-flow cells.
-    alpha=float(CFG["compute"].get("gravity_ridge_alpha",0.01))
+    # The config value is the single source of truth; the fallback equals the value used for the
+    # archived models (0.1), not 0.01, which did not converge (reports/RESEARCH_INTEGRITY.md).
+    alpha=float(CFG["compute"].get("gravity_ridge_alpha",0.1))
     maxiter = int(maxiter or CFG["compute"].get("gravity_max_iter", 2000))
     result=PoissonRegressor(alpha=alpha,max_iter=maxiter,tol=1e-4,fit_intercept=True)
     result.fit(xtr,y)

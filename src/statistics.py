@@ -33,14 +33,26 @@ def precision_at_k(relevance: np.ndarray, k: int) -> float:
 
 
 def ndcg_at_k(relevance: np.ndarray, k: int) -> float:
-    rel = np.asarray(relevance, dtype=float)[:k]
-    if not len(rel) or np.max(rel, initial=0) <= 0:
+    """NDCG@k (exponential gain) for relevance values listed in ranked order.
+
+    Undefined (NaN) only when no item in the whole list is relevant, so the ideal DCG is zero.
+    A ranking that puts no relevant item in its top k scores 0.
+
+    Fix 2026-11: the previous version returned NaN whenever the top k contained no relevant
+    item, which dropped every pool where the model missed all successes and inflated the
+    averages reported by E2, E3, the clustering analysis and robustness check R14.
+    """
+    full = np.asarray(relevance, dtype=float)
+    if not len(full):
         return np.nan
-    discounts = 1 / np.log2(np.arange(2, len(rel)+2))
-    dcg = np.sum((2**rel - 1)*discounts)
-    ideal = np.sort(np.asarray(relevance, dtype=float))[::-1][:k]
-    idcg = np.sum((2**ideal - 1)*discounts[:len(ideal)])
-    return float(dcg/idcg) if idcg > 0 else np.nan
+    n = min(k, len(full))
+    discounts = 1 / np.log2(np.arange(2, n + 2))
+    ideal = np.sort(full)[::-1][:n]
+    idcg = np.sum((2**ideal - 1) * discounts)
+    if idcg <= 0:
+        return np.nan
+    dcg = np.sum((2**full[:n] - 1) * discounts)
+    return float(dcg / idcg)
 
 
 def paired_destination_bootstrap(preds: pd.DataFrame, model_a: str, model_b: str, metric: str = "mae_usd", reps: int | None = None, seed: int = 11) -> dict:
@@ -78,4 +90,71 @@ def holm_adjust(p_values) -> np.ndarray:
     restore = np.empty_like(adjusted)
     restore[order] = adjusted
     out[ok] = restore
+    return out
+
+
+# ---------------------------------------------------------------------------------------------
+# Paired pool-level inference (added 2026-11). A "difference" is a per-pool metric difference
+# between two ranking policies evaluated on the same pool (one HS2 chapter in one year).
+# ---------------------------------------------------------------------------------------------
+
+def hs2_block_inference(diff, blocks, reps: int = 10000, seed: int = 20260101) -> dict:
+    """Mean paired difference with an HS2-block percentile bootstrap and a block sign-flip test.
+
+    All years of a chapter are resampled (or sign-flipped) together, as in the frozen evaluation.
+    """
+    d = pd.DataFrame({"b": np.asarray(blocks), "x": np.asarray(diff, dtype=float)})
+    d = d[np.isfinite(d.x)]
+    if d.empty:
+        return {"estimate": np.nan, "ci_low": np.nan, "ci_high": np.nan, "p_signflip": np.nan, "n": 0, "blocks": 0}
+    g = d.groupby("b").x.agg(["sum", "count"])
+    s, c = g["sum"].to_numpy(float), g["count"].to_numpy(float)
+    est = float(d.x.mean())
+    rng = np.random.default_rng(seed)
+    nb = len(g)
+    ix = rng.integers(0, nb, (reps, nb))
+    boot = s[ix].sum(1) / c[ix].sum(1)
+    signs = rng.choice(np.array([-1.0, 1.0]), size=(reps, nb))
+    null = (signs * s[None, :]).sum(1) / c.sum()
+    lo, hi = np.quantile(boot, [0.025, 0.975])
+    p = float((1 + np.sum(np.abs(null) >= abs(est))) / (reps + 1))
+    return {"estimate": est, "ci_low": float(lo), "ci_high": float(hi), "p_signflip": p, "n": int(len(d)), "blocks": int(nb)}
+
+
+def twoway_cluster_t(diff, group1, group2) -> dict:
+    """t-statistic of the mean difference with standard errors clustered two ways
+    (Cameron-Gelbach-Miller), e.g. by HS2 chapter and by year."""
+    import statsmodels.api as sm
+    d = pd.DataFrame({"x": np.asarray(diff, dtype=float), "g1": np.asarray(group1), "g2": np.asarray(group2)})
+    d = d[np.isfinite(d.x)].reset_index(drop=True)
+    if len(d) < 3:
+        return {"se_twoway": np.nan, "t_twoway": np.nan}
+    groups = np.column_stack([pd.factorize(d.g1)[0], pd.factorize(d.g2)[0]])
+    res = sm.OLS(d.x.to_numpy(), np.ones((len(d), 1))).fit(cov_type="cluster", cov_kwds={"groups": groups})
+    se = float(res.bse[0])
+    return {"se_twoway": se, "t_twoway": float(d.x.mean() / se) if se > 0 else np.nan}
+
+
+def year_signflip_p(diff, years) -> dict:
+    """Exact sign-flip test on the annual mean differences (all 2^T sign patterns).
+
+    With T years the smallest attainable two-sided p-value is 2 / 2^T (0.016 for T = 7, 0.25 for T = 3),
+    so a three-year window can never reach conventional significance once year-level dependence is respected.
+    """
+    d = pd.DataFrame({"x": np.asarray(diff, dtype=float), "y": np.asarray(years)})
+    ym = d[np.isfinite(d.x)].groupby("y").x.mean().to_numpy()
+    t = len(ym)
+    if t == 0:
+        return {"p_year_signflip": np.nan, "years_positive": 0, "n_years": 0, "p_floor": np.nan}
+    flips = ((np.arange(2 ** t)[:, None] >> np.arange(t)) & 1) * 2 - 1
+    stat = np.abs((flips * ym[None, :]).mean(1))
+    p = float(np.mean(stat >= abs(ym.mean()) - 1e-12))
+    return {"p_year_signflip": p, "years_positive": int((ym > 0).sum()), "n_years": int(t), "p_floor": 2.0 / 2 ** t}
+
+
+def paired_contrast_inference(diff, blocks, years, reps: int = 10000, seed: int = 20260101) -> dict:
+    """All three layers used in the revised paper for one contrast."""
+    out = hs2_block_inference(diff, blocks, reps=reps, seed=seed)
+    out.update(twoway_cluster_t(diff, blocks, years))
+    out.update(year_signflip_p(diff, years))
     return out

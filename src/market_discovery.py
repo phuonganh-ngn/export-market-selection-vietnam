@@ -37,7 +37,26 @@ def add_entry_targets(panel: pd.DataFrame, lag: int, threshold: int) -> pd.DataF
     result["entry_success"] = np.where(result.outcome_observed & result.export_value_usd.notna(),
                                         result.export_value_usd.ge(threshold), np.nan)
     result["entry_eligible"] = result.entry_history_verified & result.entry_inactive & result.outcome_observed & result.export_value_usd.notna()
+    # Strictly inactive: verified zero exports in all three history years (the discovery evaluation pool).
+    hist = np.column_stack(history_values)
+    finite = np.isfinite(hist).all(axis=1)
+    result["entry_strict_inactive"] = inactive & finite & (np.where(np.isfinite(hist), hist, 0.0).max(axis=1) == 0)
     return result
+
+
+def entry_training_mask(frame: pd.DataFrame) -> pd.Series:
+    """Rows used to train the entry classifier (config: study.entry_training_population).
+
+    threshold_inactive keeps every eligible case whose history stayed below the threshold, including
+    small positive flows (archived behaviour). strict_inactive keeps only cases with zero history,
+    the same population as the discovery evaluation pools.
+    """
+    population = CFG["study"].get("entry_training_population", "threshold_inactive")
+    if population == "threshold_inactive":
+        return frame.entry_eligible.astype(bool)
+    if population == "strict_inactive":
+        return frame.entry_eligible.astype(bool) & frame.entry_strict_inactive.astype(bool)
+    raise ValueError(f"Unknown entry_training_population: {population!r}")
 
 
 def threshold_counts(panel: pd.DataFrame, lag: int) -> pd.DataFrame:
@@ -108,7 +127,7 @@ def run(lag: int | None = None, quick: bool = False, threshold_override: int | N
     seeds = [CFG["study"]["seeds"][0]] if quick or CFG["compute"].get("quick_mode") else CFG["study"]["seeds"]
     for eval_year in CFG["study"]["evaluation_years"]:
         train, test = split_outer(tagged, int(eval_year), lag)
-        train = train.loc[train.entry_eligible].copy()
+        train = train.loc[entry_training_mask(train)].copy()
         test = test.loc[test.entry_eligible].copy()
         if len(train) < 50 or train.entry_success.nunique() < 2 or test.empty or test.entry_success.nunique() < 2:
             failures.append({"evaluation_year": eval_year, "error": "insufficient verified eligible entries or positive class"})

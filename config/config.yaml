@@ -17,13 +17,29 @@ study:
   seeds: [11, 23, 37, 51, 73]
   tuning_trials: 2
   max_workers: 4
+  # Revision 2026-11. Training population of the entry classifier:
+  #   threshold_inactive = history below the entry threshold in all three years (archived behaviour)
+  #   strict_inactive    = history exactly zero in all three years (matches the discovery evaluation pools)
+  entry_training_population: threshold_inactive
+  # Numeric features excluded from every model. common_official_language is zero for every
+  # Vietnam-destination pair, so it carries no information. Use [] to reproduce archived models.
+  excluded_features: [common_official_language]
+  # Tie rule for equal-weight rank fusion: iso3 (archived), first_component (PPML wins ties) or average.
+  fusion_tie_rule: iso3
 compute:
   chunk_rows: 500000
   model_threads: 4
   random_forest_trees: 100
   boosting_rounds: 120
+  # Single source of truth for the PPML L2 penalty (sklearn alpha). Archived models used 0.1.
   gravity_ridge_alpha: 0.1
   gravity_max_iter: 2000
+  # Revision 2026-11: row and column subsampling for LightGBM so that the configured seeds give a
+  # genuine ensemble. With 1.0 / 0 / 1.0 the model is deterministic and every seed is identical,
+  # which is how the archived models were fitted (see config/legacy_archived.yaml).
+  lightgbm_subsample: 0.8
+  lightgbm_subsample_freq: 1
+  lightgbm_colsample_bytree: 0.8
   quick_mode: false
 paths:
   raw_baci_dir: data/raw/baci

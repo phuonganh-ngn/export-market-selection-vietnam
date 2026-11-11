@@ -10,7 +10,12 @@ import pandas as pd
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
-CFG = yaml.safe_load((ROOT / "config/config.yaml").read_text())
+# The configuration file can be switched with M1_CONFIG (absolute path, or relative to the project
+# root), e.g. M1_CONFIG=config/legacy_archived.yaml to reproduce the archived models exactly.
+CONFIG_PATH = Path(os.environ.get("M1_CONFIG", "config/config.yaml"))
+if not CONFIG_PATH.is_absolute():
+    CONFIG_PATH = ROOT / CONFIG_PATH
+CFG = yaml.safe_load(CONFIG_PATH.read_text())
 
 
 def path(key: str) -> Path:
