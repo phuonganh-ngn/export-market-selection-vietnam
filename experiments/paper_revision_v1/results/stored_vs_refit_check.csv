@@ -1,0 +1,15 @@
+task,year,spearman_refit_vs_archived
+Task_A_new_entry,2018,0.9721650394711512
+Task_A_new_entry,2019,0.9851145545397956
+Task_A_new_entry,2020,0.9877372235352773
+Task_A_new_entry,2021,0.9869770408832635
+Task_A_new_entry,2022,0.9893919852936982
+Task_A_new_entry,2023,0.9891325477369005
+Task_A_new_entry,2024,0.9901567044478721
+Task_B_existing_underexploited,2018,0.8696937896816221
+Task_B_existing_underexploited,2019,0.9325960554544249
+Task_B_existing_underexploited,2020,0.9421541225457414
+Task_B_existing_underexploited,2021,0.9390271988164364
+Task_B_existing_underexploited,2022,0.8997791408470959
+Task_B_existing_underexploited,2023,0.9274793768647669
+Task_B_existing_underexploited,2024,0.947810403927753

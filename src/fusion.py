@@ -7,7 +7,9 @@ which lies in [0, 1]. The archived pipeline used (n - r + 1) / (n - 1), which is
 1 / (n - 1) for every candidate of the pool; it therefore gives exactly the same ordering and the same
 ties, but the best candidate scored above 1.
 
-Ties. Equal-weight averaging of two ranks often produces exact ties. The rule is configurable:
+Ties. Equal-weight averaging of two ranks often produces exact ties. Fused scores are rounded to 12
+decimals so that equal rank sums are exact ties (the archived float arithmetic let rounding noise of
+order 1e-17 order some of them). The rule that resolves ties is configurable:
   iso3            - ascending destination code (archived behaviour; arbitrary but reproducible)
   first_component - the first score column (PPML in the paper) decides, then ISO3
   average         - fractional ("average") component ranks, then ISO3 for any remaining tie
@@ -45,7 +47,9 @@ def fuse_pool(g: pd.DataFrame, score_cols: list[str], weights: list[float] | Non
         r = _component_rank(g, col, id_col, method).to_numpy(float)
         g[f"_rank_{col}"] = r
         fused += w * (n - r) / den
-    g["fused_score"] = fused
+    # Round before tie-breaking: equal rank sums must be exact ties. Without this, floating-point noise
+    # of order 1e-17 decided some "ties" in the archived pipeline instead of the declared tie rule.
+    g["fused_score"] = np.round(fused, 12)
     keys = ["fused_score"] + ([f"_rank_{score_cols[0]}"] if tie_rule == "first_component" else []) + [id_col]
     asc = [False] + ([True] if tie_rule == "first_component" else []) + [True]
     order = g.sort_values(keys, ascending=asc, kind="mergesort").index
