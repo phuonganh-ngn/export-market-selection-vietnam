@@ -1,0 +1,46 @@
+project: "From Export Forecasting to Market Selection"
+study:
+  exporter_iso3: VNM
+  first_year: 2012
+  last_year: 2024
+  evaluation_years: [2022, 2023, 2024]
+  lags: [2, 1]
+  primary_lag: 2
+  primary_entry_threshold_usd: 50000
+  entry_thresholds_usd: [10000, 50000, 100000]
+  min_training_rows: 1000
+  min_entry_events: 20
+  hs4_max_chapters: 12
+  shap_sample_size: 2000
+  ale_sample_size: 5000
+  bootstrap_replicates: 200
+  seeds: [11, 23, 37, 51, 73]
+  tuning_trials: 2
+  max_workers: 4
+compute:
+  chunk_rows: 500000
+  model_threads: 4
+  random_forest_trees: 100
+  boosting_rounds: 120
+  gravity_ridge_alpha: 0.1
+  gravity_max_iter: 2000
+  quick_mode: false
+paths:
+  raw_baci_dir: data/raw/baci
+  raw_wdi_dir: data/raw/wdi
+  raw_wgi_dir: data/raw/wgi
+  raw_cepii_dir: data/raw/cepii
+  interim_dir: data/interim
+  processed_dir: data/processed
+  results_dir: results
+  reports_dir: reports
+sources:
+  baci_version: V202601
+  baci_hs: HS12
+  baci_url: https://www.cepii.fr/DATA_DOWNLOAD/baci/data/BACI_HS12_V202601.zip
+  hs12_headings_url: https://www.wcoomd.org/en/topics/nomenclature/instrument-and-tools/hs_nomenclature_previous_editions/hs_nomenclature_table_2012.aspx
+  wdi_api: https://api.worldbank.org/v2
+  wgi_version: "2026"
+  wgi_url: https://www.worldbank.org/content/dam/sites/govindicators/doc/wgidataset_with_sourcedata-2026.xlsx
+  geodist_url: https://www.cepii.fr/distance/dist_cepii.zip
+  geodist_country_url: https://www.cepii.fr/distance/geo_cepii.xls

@@ -1,0 +1,18 @@
+version: 1
+primary_task_a: strict_zero_verified_exports_in_three_years_ending_at_outcome_year_minus_2
+task_a_success_threshold_usd: 50000
+task_b: historical_positive_export_and_market_share_at_or_below_training_hs2_median
+primary_information_lag_years: 2
+evaluation_years: [2022, 2023, 2024]
+historical_oof_years: [2018, 2019, 2020, 2021]
+primary_k: 10
+sensitivity_k: 5
+blend: equal_weight_within_pool_percentile_ranks
+blend_weights_sensitivity: [0.25, 0.5, 0.75]
+bootstrap: hs2_block_percentile_ci_and_sign_flip_test
+bootstrap_replicates: 10000
+seeds: [11, 23, 37, 51, 73]
+outer_evidence_status: exploratory_retrospective_previously_inspected
+missing_label_policy: retain_unknown; complete_case_metrics; no_zero_imputation
+threshold_policy: chronological_cross_fitted_development_quantiles; realized_coverage_not_forced
+max_threads: 4

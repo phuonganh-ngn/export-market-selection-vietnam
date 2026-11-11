@@ -1,0 +1,14 @@
+year,raw_records,trade_value_thousand_usd,invalid_hs6_records,negative_value_records,missing_field_records,source_member,header_validation
+2012,,,,,,BACI_HS12_Y2012_V202601.csv,passed
+2013,,,,,,BACI_HS12_Y2013_V202601.csv,passed
+2014,,,,,,BACI_HS12_Y2014_V202601.csv,passed
+2015,,,,,,BACI_HS12_Y2015_V202601.csv,passed
+2016,,,,,,BACI_HS12_Y2016_V202601.csv,passed
+2017,,,,,,BACI_HS12_Y2017_V202601.csv,passed
+2018,,,,,,BACI_HS12_Y2018_V202601.csv,passed
+2019,,,,,,BACI_HS12_Y2019_V202601.csv,passed
+2020,,,,,,BACI_HS12_Y2020_V202601.csv,passed
+2021,,,,,,BACI_HS12_Y2021_V202601.csv,passed
+2022,,,,,,BACI_HS12_Y2022_V202601.csv,passed
+2023,,,,,,BACI_HS12_Y2023_V202601.csv,passed
+2024,,,,,,BACI_HS12_Y2024_V202601.csv,passed

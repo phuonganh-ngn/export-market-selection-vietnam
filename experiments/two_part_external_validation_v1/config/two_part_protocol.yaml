@@ -1,0 +1,17 @@
+version: 1
+source: CEPII BACI HS12 V202601; local verified source
+vietnam_outer_years: [2022, 2023, 2024]
+lag: 2
+task_a_history: three verified bilateral zero-export years ending at outcome_year_minus_2
+entry_threshold_usd: 50000
+two_part_estimand: E[V * 1(V >= 50000) | X]
+probability_model: existing LightGBM entry classifier; historical OOF Platt calibration only
+conditional_value_model: pooled log-link PPML on observed qualifying strict-zero entries only
+external_countries: [THA, IDN]
+external_modes: [VNM_zero_shot_transfer, country_specific_walk_forward_replication]
+external_years: [2022, 2023, 2024]
+k_values: [5, 10, 15, 20]
+unknown_labels: retained as missing; no zero imputation
+max_threads: 4
+seeds: [11]
+evidence: VNM exploratory; THA exploratory after outcome exposure; IDN predeclared geographic replication only

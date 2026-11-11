@@ -1,0 +1,4 @@
+exclusion_rule,rows_before_filter,unit
+self_destination_Vietnam,1248,destination-HS2-year
+destination_without_alpha3_mapping,1248,destination-HS2-year
+positive_world_imports_required_for_market_observation,0,destination-HS2-year

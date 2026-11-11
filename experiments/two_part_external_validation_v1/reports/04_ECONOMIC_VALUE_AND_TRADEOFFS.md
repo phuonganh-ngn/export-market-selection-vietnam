@@ -1,0 +1,3 @@
+# 04 — Economic value and trade-offs
+
+Qualified USD uses `V×1(V≥$50,000)`. Total export value is listed separately. The two-part score produces lower Top-10 qualified export capture than LightGBM and the original rank blend in Vietnam. The complete-case USD effect is not causal and does not represent profit or promotion gains. The positive sub-threshold flow diagnostic is in `results/A_target_diagnostics.csv`; the two-part target omits those exports by construction. The conditional PPML sample and conditional-value error by year are in `results/A_conditional_value_accuracy.csv`; the sample is materially smaller than the all-market panel, and uncertainty is high because the positive qualifying tail is skewed.

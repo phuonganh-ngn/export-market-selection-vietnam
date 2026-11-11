@@ -1,0 +1,5 @@
+feature_group,source_and_timing,feature_year,required_max_year,lag,assertion
+macro_and_wgi,World Bank WDI/WGI annual observation at feature_year,outcome_year - lag,<= outcome_year - 1,1,passed after panel construction
+geography,CEPII GeoDist 2011 time-invariant bilateral measure,outcome_year - lag,<= outcome_year - 1,1,passed after panel construction
+trade_demand,BACI destination HS2 imports and supplier concentration at feature_year,outcome_year - lag,<= outcome_year - 1,1,passed after panel construction
+historical_trade,BACI Vietnam exports at feature_year and prior historical years,outcome_year - lag,<= outcome_year - 1,1,passed after panel construction

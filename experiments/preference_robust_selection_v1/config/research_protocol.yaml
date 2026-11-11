@@ -1,0 +1,18 @@
+study:
+  years: [2022, 2023, 2024]
+  lag: 2
+  entry_threshold_usd: 50000
+  decision_budgets: [10, 5]
+  task_a: Task_A_new_entry
+  task_b: Task_B_existing_underexploited
+  panel: data/processed/panel_lag2.parquet
+  old_candidate_manifest: experiments/decision_focused_xai_v1/results/candidate_manifest.csv
+  old_ranking_predictions: experiments/decision_focused_xai_v1/predictions/E6_ranking_predictions.parquet
+  old_neural_rankings: experiments/post_audit_nn_dl_v1/predictions/E3_neural_rankings.parquet
+  old_entry_predictions: experiments/post_audit_nn_dl_v1/predictions/E2_neural_predictions.parquet
+  quantile_scale: 0.95
+  bootstrap_repetitions: 3000
+  bootstrap_seed_base: 20261012
+  destination_bootstrap: not_used_candidate_resampling_changes_topk_universe
+  max_threads: 4
+  holdout_status: NO_FRESH_INDEPENDENT_HOLDOUT

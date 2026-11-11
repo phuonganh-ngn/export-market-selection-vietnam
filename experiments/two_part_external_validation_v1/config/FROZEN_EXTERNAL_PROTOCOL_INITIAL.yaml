@@ -1,0 +1,47 @@
+protocol_version: 1
+freeze_timestamp_local: '2026-10-13 Asia/Bangkok'
+source: CEPII BACI HS12 V202601, existing local archive only
+countries:
+  vietnam_reference: VNM
+  primary_external: THA
+  secondary_external: IDN
+external_outcome_years: [2022, 2023, 2024]
+information_lag_years: 2
+training_outcome_cutoff_rule: outcome_year_minus_2
+hs_aggregation: HS6 source aggregated to HS2 by first two digits
+eligible_reporting_market: destination-HS2 has positive all-exporter world imports in feature year
+unknown_outcome_rule: missing when no positive all-exporter destination-HS2 import observation in outcome year; never set to zero
+Task_A:
+  definition: no verified exporter bilateral exports in all three years ending at outcome_year_minus_2
+  entry_threshold_usd: 50000
+  label: 1 if verified outcome export >= threshold; 0 if verified outcome below threshold; NA if outcome unobserved
+  primary_population: strict-zero candidates with historical predictor year and destination-product positive import demand
+Task_B:
+  definition: historical exporter exports positive and historical market share at or below training HS2 median
+  status: secondary descriptive replication only
+models:
+  entry_probability: LightGBM binary classifier; fixed M1 fallback parameters n_estimators=120,num_leaves=31,learning_rate=0.05,max_depth=-1,min_child_samples=40; seed=11; max_threads=4
+  conditional_value_primary: pooled conditional PPML log-link on verified Task_A training successes only, USD outcome
+  rank_blend: equal-weight within-pool percentile ranks of M1 Gravity-PPML and LightGBM scores
+  two_part_score: calibrated_entry_probability * conditional_PPML_mean; target is qualified exports, not total export mean
+  k_values: [5, 10, 15, 20]
+transfer:
+  rule: apply VNM-fitted coefficients and preprocessing without external label recalibration; recompute exporter-specific and bilateral historical features for target exporter
+  infeasible_if: frozen feature schema, required origin-specific features, fitted transforms, or model artifact cannot be transported consistently
+replication:
+  rule: fit same frozen model specifications on each target exporter historical outcomes with fold-specific y-2 cutoff; no final-year labels for model selection
+  calibration: chronological historical out-of-fold Platt calibration only; if insufficient OOF positives, report uncalibrated probability and mark calibrated two-part unavailable
+objective_ex_ante_feasibility_checks:
+  - BACI country-codebook mappings exist for THA and IDN
+  - annual source files for 2012-2024 exist in local V202601 archive
+  - at least 80 HS2 chapters have candidate observations in each external evaluation year
+  - candidate IDs are unique and outcome availability is determined only after candidate prediction files are frozen
+inference:
+  primary_metric: within-country difference in observed qualified export USD captured at K=10
+  uncertainty: paired HS2-block bootstrap; evaluation years reported separately
+  adjustment: Holm within country-specific prespecified comparisons
+limitations:
+  - external-country evaluation is geographic replication, not new temporal-cycle validation
+  - historical WDI/WGI data are revised vintages, not point-in-time releases
+  - no causal interpretation of observed trade gains
+  - no imputing missing outcomes as zero

@@ -1,0 +1,225 @@
+destination_iso3,destination_name,panel_observations,hs2_chapters,years_observed
+ABW,Aruba,1053,96,11
+AFG,Afghanistan,1045,96,11
+AGO,Angola,1056,96,11
+AIA,Anguilla,876,92,11
+ALB,Albania,1056,96,11
+AND,Andorra,1050,96,11
+ARE,United Arab Emirates,1056,96,11
+ARG,Argentina,1056,96,11
+ARM,Armenia,1056,96,11
+ASM,American Samoa,860,91,11
+ATF,Fr. South Antarctic Terr.,688,81,11
+ATG,Antigua and Barbuda,1019,96,11
+AUS,Australia,1056,96,11
+AUT,Austria,1056,96,11
+AZE,Azerbaijan,1056,96,11
+BDI,Burundi,1035,96,11
+BEL,Belgium,1056,96,11
+BEN,Benin,1051,96,11
+BES,Bonaire,879,95,11
+BFA,Burkina Faso,1050,96,11
+BGD,Bangladesh,1056,96,11
+BGR,Bulgaria,1056,96,11
+BHR,Bahrain,1056,96,11
+BHS,Bahamas,1055,96,11
+BIH,Bosnia Herzegovina,1056,96,11
+BLM,Saint BarthÃ©lemy,799,94,10
+BLR,Belarus,1056,96,11
+BLZ,Belize,1055,96,11
+BMU,Bermuda,1056,96,11
+BOL,Bolivia (Plurinational State of),1056,96,11
+BRA,Brazil,1056,96,11
+BRB,Barbados,1053,96,11
+BRN,Brunei Darussalam,1056,96,11
+BTN,Bhutan,1006,96,11
+BWA,Botswana,1056,96,11
+CAF,Central African Rep.,954,95,11
+CAN,Canada,1056,96,11
+CCK,Cocos Isds,468,66,11
+CHE,Switzerland,1056,96,11
+CHL,Chile,1056,96,11
+CHN,China,1056,96,11
+CIV,CÃ´te d'Ivoire,1056,96,11
+CMR,Cameroon,1056,96,11
+COD,Dem. Rep. of the Congo,1056,96,11
+COG,Congo,1056,96,11
+COK,Cook Isds,986,94,11
+COL,Colombia,1056,96,11
+COM,Comoros,1020,96,11
+CPV,Cabo Verde,1050,96,11
+CRI,Costa Rica,1056,96,11
+CUB,Cuba,1054,96,11
+CUW,CuraÃ§ao,1050,96,11
+CXR,Christmas Isds,719,83,11
+CYM,Cayman Isds,1042,96,11
+CYP,Cyprus,1056,96,11
+CZE,Czechia,1056,96,11
+DEU,Germany,1056,96,11
+DJI,Djibouti,1047,96,11
+DMA,Dominica,969,96,11
+DNK,Denmark,1056,96,11
+DOM,Dominican Rep.,1056,96,11
+DZA,Algeria,1056,96,11
+ECU,Ecuador,1056,96,11
+EGY,Egypt,1056,96,11
+ERI,Eritrea,918,94,11
+ESP,Spain,1056,96,11
+EST,Estonia,1056,96,11
+ETH,Ethiopia,1056,96,11
+FIN,Finland,1056,96,11
+FJI,Fiji,1056,96,11
+FLK,Falkland Isds (Malvinas),833,90,11
+FRA,France,1056,96,11
+FSM,FS Micronesia,855,87,11
+GAB,Gabon,1055,96,11
+GBR,United Kingdom,1056,96,11
+GEO,Georgia,1056,96,11
+GHA,Ghana,1056,96,11
+GIB,Gibraltar,1041,96,11
+GIN,Guinea,1045,96,11
+GMB,Gambia,1026,96,11
+GNB,Guinea-Bissau,954,95,11
+GNQ,Equatorial Guinea,1014,96,11
+GRC,Greece,1056,96,11
+GRD,Grenada,1039,96,11
+GRL,Greenland,1053,96,11
+GTM,Guatemala,1056,96,11
+GUM,Guam,956,94,11
+GUY,Guyana,1047,96,11
+HKG,"China, Hong Kong SAR",1056,96,11
+HND,Honduras,1056,96,11
+HRV,Croatia,1056,96,11
+HTI,Haiti,1043,96,11
+HUN,Hungary,1056,96,11
+IDN,Indonesia,1056,96,11
+IND,India,1056,96,11
+IOT,Br. Indian Ocean Terr.,595,83,11
+IRL,Ireland,1056,96,11
+IRN,Iran,1055,96,11
+IRQ,Iraq,1056,96,11
+ISL,Iceland,1056,96,11
+ISR,Israel,1056,96,11
+ITA,Italy,1056,96,11
+JAM,Jamaica,1056,96,11
+JOR,Jordan,1056,96,11
+JPN,Japan,1056,96,11
+KAZ,Kazakhstan,1056,96,11
+KEN,Kenya,1056,96,11
+KGZ,Kyrgyzstan,1056,96,11
+KHM,Cambodia,1056,96,11
+KIR,Kiribati,950,96,11
+KNA,Saint Kitts and Nevis,961,94,11
+KOR,Rep. of Korea,1056,96,11
+KWT,Kuwait,1056,96,11
+LAO,Lao People's Dem. Rep.,1056,96,11
+LBN,Lebanon,1056,96,11
+LBR,Liberia,1039,96,11
+LBY,Libya,1056,96,11
+LCA,Saint Lucia,1024,96,11
+LKA,Sri Lanka,1056,96,11
+LSO,Lesotho,1056,96,11
+LTU,Lithuania,1056,96,11
+LUX,Luxembourg,1056,96,11
+LVA,Latvia,1056,96,11
+MAC,"China, Macao SAR",1054,96,11
+MAR,Morocco,1056,96,11
+MDA,Rep. of Moldova,1056,96,11
+MDG,Madagascar,1056,96,11
+MDV,Maldives,1056,96,11
+MEX,Mexico,1056,96,11
+MHL,Marshall Isds,965,95,11
+MKD,North Macedonia,1056,96,11
+MLI,Mali,1043,96,11
+MLT,Malta,1056,96,11
+MMR,Myanmar,1056,96,11
+MNE,Montenegro,1056,96,11
+MNG,Mongolia,1056,96,11
+MNP,N. Mariana Isds,772,82,11
+MOZ,Mozambique,1056,96,11
+MRT,Mauritania,1041,96,11
+MSR,Montserrat,794,94,11
+MUS,Mauritius,1056,96,11
+MWI,Malawi,1055,96,11
+MYS,Malaysia,1056,96,11
+NAM,Namibia,1056,96,11
+NCL,New Caledonia,1054,96,11
+NER,Niger,1037,96,11
+NFK,Norfolk Isds,809,85,11
+NGA,Nigeria,1056,96,11
+NIC,Nicaragua,1056,96,11
+NIU,Niue,832,84,11
+NLD,Netherlands,1056,96,11
+NOR,Norway,1056,96,11
+NPL,Nepal,1053,96,11
+NRU,Nauru,807,85,11
+NZL,New Zealand,1056,96,11
+OMN,Oman,1056,96,11
+PAK,Pakistan,1056,96,11
+PAN,Panama,1056,96,11
+PCN,Pitcairn,355,56,11
+PER,Peru,1056,96,11
+PHL,Philippines,1056,96,11
+PLW,Palau,933,96,11
+PNG,Papua New Guinea,1056,96,11
+POL,Poland,1056,96,11
+PRK,Dem. People's Rep. of Korea,957,96,11
+PRT,Portugal,1056,96,11
+PRY,Paraguay,1056,96,11
+PSE,State of Palestine,982,95,11
+PYF,French Polynesia,1056,96,11
+QAT,Qatar,1056,96,11
+ROU,Romania,1056,96,11
+RUS,Russian Federation,1056,96,11
+RWA,Rwanda,1052,96,11
+SAU,Saudi Arabia,1056,96,11
+SDN,Sudan,1052,96,11
+SEN,Senegal,1056,96,11
+SGP,Singapore,1056,96,11
+SHN,Saint Helena,897,95,11
+SLB,Solomon Isds,976,96,11
+SLE,Sierra Leone,1013,95,11
+SLV,El Salvador,1056,96,11
+SMR,San Marino,888,93,11
+SOM,Somalia,1033,96,11
+SPM,Saint Pierre and Miquelon,958,92,11
+SRB,Serbia,1056,96,11
+SSD,South Sudan,990,96,11
+STP,Sao Tome and Principe,956,94,11
+SUR,Suriname,1036,96,11
+SVK,Slovakia,1056,96,11
+SVN,Slovenia,1056,96,11
+SWE,Sweden,1056,96,11
+SWZ,Eswatini,1056,96,11
+SXM,Saint Maarten,1007,96,11
+SYC,Seychelles,1056,96,11
+SYR,Syria,1050,96,11
+TCA,Turks and Caicos Isds,970,95,11
+TCD,Chad,1007,96,11
+TGO,Togo,1049,96,11
+THA,Thailand,1056,96,11
+TJK,Tajikistan,1049,96,11
+TKL,Tokelau,535,75,11
+TKM,Turkmenistan,1056,96,11
+TLS,Timor-Leste,1038,96,11
+TON,Tonga,1019,96,11
+TTO,Trinidad and Tobago,1056,96,11
+TUN,Tunisia,1056,96,11
+TUR,TÃ¼rkiye,1056,96,11
+TUV,Tuvalu,839,89,11
+TZA,United Rep. of Tanzania,1056,96,11
+UGA,Uganda,1056,96,11
+UKR,Ukraine,1056,96,11
+URY,Uruguay,1056,96,11
+USA,USA,1056,96,11
+UZB,Uzbekistan,1056,96,11
+VCT,Saint Vincent and the Grenadines,987,95,11
+VEN,Venezuela,1051,96,11
+VGB,Br. Virgin Isds,999,96,11
+VUT,Vanuatu,969,95,11
+WLF,Wallis and Futuna Isds,841,84,11
+WSM,Samoa,1040,96,11
+YEM,Yemen,1047,96,11
+ZAF,South Africa,1056,96,11
+ZMB,Zambia,1056,96,11
+ZWE,Zimbabwe,1056,96,11

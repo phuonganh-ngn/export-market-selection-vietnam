@@ -1,0 +1,3 @@
+# 05 — Ranking mechanism and numerical explanation
+
+The Two-Part ranking multiplies calibrated entry probability by a conditional PPML conditional-mean estimate. Ranking movements and Top-10 overlaps are recorded in `results/A_rank_change_decomposition.csv`; actual country selections and observed outcomes for the ten most positive and ten most negative within-pool qualified-USD changes versus rank blending are in `results/A_case_studies.csv`. These are post hoc descriptive case studies, not confirmatory evidence. Probability and conditional-value components are predictive quantities; they are not causal economic mechanisms.

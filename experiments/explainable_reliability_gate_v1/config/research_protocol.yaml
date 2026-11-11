@@ -1,0 +1,31 @@
+version: 1
+primary_lag_years: 2
+evaluation_years: [2022, 2023, 2024]
+historical_oof_years: [2018, 2019, 2020, 2021]
+entry_threshold_usd: 50000
+entry_inactivity_years: 3
+entry_definition_primary: zero_verified_exports_in_all_three_history_years
+entry_definition_sensitivity: each_history_year_below_50000_usd
+expansion_definition: positive_historical_export_and_share_at_or_below_training_hs2_median
+decision_budget_primary: 10
+decision_budget_sensitivity: 5
+seeds: [11, 23, 37, 51, 73]
+primary_experts: [Gravity_PPML, LightGBM]
+pool_unit: task_x_hs2_x_outcome_year
+reliability_target: complete_case_retrospective_regret_at_10
+requested_automation_coverage: [1.0, 0.9, 0.8, 0.7, 0.6, 0.5]
+coverage_threshold_tie_rule: stable_sort_by_risk_then_hs2
+outer_period_status: exploratory_retrospective_previously_inspected
+macro_vintage_status: revised_historical_wdi_wgi_not_point_in_time
+human_expert_labels_available: false
+human_review_performance_status: not_identified
+max_threads: 4
+lightgbm_oof_parameter_policy: two-trial chronological inner validation per fold; seed 11; max four threads
+lightgbm_fallback_parameters:
+  n_estimators: 120
+  num_leaves: 31
+  learning_rate: 0.05
+  min_child_samples: 40
+  n_jobs: 4
+  verbosity: -1
+ridge_alpha: 10.0

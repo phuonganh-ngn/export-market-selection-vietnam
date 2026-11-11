@@ -1,0 +1,48 @@
+version: 1
+project: GRU-Based Temporal Learning for Export Market Discovery
+exporter_iso3: VNM
+task: Task_A_new_entry_strict_zero_verified_three_year_history
+entry_threshold_usd: 50000
+primary_information_lag_years: 2
+primary_evaluation_years: [2022, 2023, 2024]
+primary_sequence_years: outcome_year_minus_6_through_outcome_year_minus_2
+primary_lookback: 5
+sensitivity_lookback: 3
+outer_training_outcome_cutoff: evaluation_year_minus_2
+chronological_validation: latest_training_outcome_year_with_inner_training_outcomes_no_later_than_validation_year_minus_2
+primary_gru:
+  hidden_size: 32
+  layers: 1
+  batch_size: 256
+  optimizer: AdamW
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  max_epochs: 40
+  early_stopping_patience: 6
+  loss: BCEWithLogitsLoss_with_training_only_positive_class_weight
+  dropout: 0.1
+  seeds: [11, 23, 37, 51, 73]
+gru_sequence_only:
+  enabled: true
+gru_sequence_plus_static:
+  enabled: true
+  static_numeric: [log_distance, contiguous, common_official_language, colonial_link, common_colonizer, landlocked]
+  categorical: [destination_iso3, hs2]
+matched_lightgbm:
+  enabled: true
+  primary_features: flattened_five_year_sequence_plus_same_static_features_and_unknown_indicators
+  secondary_features: five_year_sequence_plus_training_only_mean_sd_change_min_max
+  n_estimators: 120
+  num_leaves: 31
+  learning_rate: 0.05
+  max_depth: -1
+  min_child_samples: 40
+  class_weight: balanced
+  max_threads: 4
+missing_labels: retain_as_unknown; exclude_from_model_fit_and_primary_complete_case_metrics; never_recoded_to_zero
+ranking: within_hs2_outcome_year_pool; deterministic_ties_by_destination_iso3
+inference: paired_hs2_block_bootstrap_and_block_sign_flip; 10000_replicates; Holm_within_predeclared_3x3_families
+evidence_status: exploratory_retrospective_previously_inspected_2022_2024
+outer_evaluation_labels_may_not_be_used_for_training_tuning_or_preprocessing: true
+max_cpu_threads: 4
+figures: prohibited

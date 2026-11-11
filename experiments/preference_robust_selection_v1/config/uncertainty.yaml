@@ -1,0 +1,20 @@
+prediction_scenarios:
+  construction: Existing rolling-origin model predictions and training-only conditional-entry size quantiles.
+  calibrated_distribution: false
+  Task_A:
+    narrow_models: [LightGBM, XGBoost]
+    primary_models: [Historical_entry_frequency, LogisticRegression, RandomForest, LightGBM, XGBoost, MLP, TabM]
+    stress_models: [Historical_entry_frequency, LogisticRegression, RandomForest, LightGBM, XGBoost, MLP, TabM]
+    narrow_size_quantiles: [0.40, 0.60]
+    primary_size_quantiles: [0.25, 0.50, 0.75]
+    stress_size_quantiles: [0.10, 0.50, 0.90]
+  Task_B:
+    probability_models: [LogisticRegression, Smoothed_HS2_share_frequency]
+    narrow_amount_models: [Gravity_PPML, LightGBM, XGBoost]
+    primary_amount_models: [Gravity_PPML, RandomForest, XGBoost, LightGBM, MLP, TabM]
+    stress_amount_models: [Gravity_PPML, RandomForest, XGBoost, LightGBM, MLP, TabM]
+missing_labels:
+  factual_imputation: false
+  task_a_support: "entry utility in {0} union [predefined threshold-scale utility, 1]"
+  task_b_support: "bounded capped-utility interval [0,1]"
+  export_usd_upper_bound: null

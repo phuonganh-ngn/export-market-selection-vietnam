@@ -1,0 +1,1 @@
+The first prediction artifact used a legacy `entry_probability_raw` alias whose values equaled the calibrated probability used for ranking. The final prediction-only Parquet removes that duplicate alias and retains `entry_probability_calibrated`; model-score values are unchanged. The original pre-evaluation hash is preserved in `results/B_prediction_hash_history.csv`.

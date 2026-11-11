@@ -1,0 +1,32 @@
+experiment: M1 hybrid rank-fusion tie sensitivity
+version: 1
+input: experiments/final_hybrid_economic_validation_v1/predictions/F1_F2_reconstructed_outer_scores.parquet
+task: Task_A_new_entry
+outcome_years: [2022, 2023, 2024]
+primary_k: 10
+candidate_eligibility: unchanged strict-zero Task A manifest
+hybrid_formula: equal-weight mean of within-pool normalized inverse PPML and LightGBM ranks
+exact_tie_key: exact equality of archived/reconstructed original floating-point Hybrid score; integer rank sum retained as a numerical-rounding diagnostic
+rules:
+  - ISO3_ascending_original
+  - PPML_first_then_LightGBM_then_ISO3
+  - LightGBM_first_then_PPML_then_ISO3
+  - uniformly_random_within_each_exact_score_tie_group
+random_tie_seeds: [10000, 10999]
+random_seed_count: 1000
+random_seed_interpretation: tie-order Monte Carlo sensitivity, not independent evaluation samples
+bootstrap:
+  unit: HS2 block; retain all outcome years in each sampled block
+  replicates: 10000
+  rng_seed: 51073
+  interval: percentile 95 percent
+  test: paired cluster-level sign flip
+holm_families:
+  - Family_A_NDCG10
+  - Family_A_Precision10
+  - Family_A_SuccessCount10
+  - Family_A_QualifiedUSD10
+  - Family_A_RawUSD10
+  family_members: original ISO3 Hybrid vs LightGBM; original ISO3 Hybrid vs PPML; PPML-first vs LightGBM; LightGBM-first vs LightGBM; random-tie expected policy vs LightGBM
+missing_outcomes: preserve as unknown; complete-case paired inference for selected-outcome metrics; report unknown selection counts and observed partial sums separately
+case_selection: all 51 original boundary-tie pools plus all prior feature-XAI case-study pairs

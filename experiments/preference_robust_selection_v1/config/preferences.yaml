@@ -1,0 +1,10 @@
+primary:
+  name: W_primary
+  objective_1_weight_min: 0.25
+  objective_1_weight_max: 0.75
+sensitivity:
+  W_narrow: [0.40, 0.60]
+  W_primary: [0.25, 0.75]
+  W_broad: [0.00, 1.00]
+fixed_weights: [0.00, 0.25, 0.50, 0.75, 1.00]
+interpretation: Hypothetical decision-maker preference ranges; not elicited or estimated from Vietnamese firms.

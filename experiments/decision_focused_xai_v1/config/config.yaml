@@ -1,0 +1,20 @@
+project: M1 decision-focused ranking
+study:
+  evaluation_years: [2022, 2023, 2024]
+  feature_lag_years: 2
+  entry_threshold_usd: 50000
+  seeds: [11, 23, 37, 51, 73]
+  top_k: [5, 10]
+  task_b_training_quantiles: [0.25, 0.50, 0.75]
+  task_b_label_gain: [0, 1, 3, 7, 15]
+compute:
+  max_threads: 4
+  max_hyperparameter_trials: 20
+  selected_hyperparameter_trials: 3
+  max_estimators: 700
+  early_stopping_rounds: 35
+  bootstrap_replicates: 5000
+  seed_bootstrap_replicates: 1000
+outputs:
+  preserve_existing_artifacts: true
+  figures: false

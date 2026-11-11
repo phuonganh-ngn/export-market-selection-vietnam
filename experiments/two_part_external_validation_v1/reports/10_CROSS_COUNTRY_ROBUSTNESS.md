@@ -1,0 +1,3 @@
+# 10 — Cross-country robustness
+
+The country-specific protocol is geographically replicated in both prespecified countries. IDN is the only outcome-uninspected external context at the time the prediction manifest was sealed; THA was exposed during debugging and is exploratory. Models are compared on identical country/task/year/HS2 pools. Missing outcomes are never zero-filled; Top-10 USD sums are observed partial sums where unknown labels are selected. The number of complete-case NDCG pools varies by country-year because some pools have no identified positive outcome. `results/B_cross_country_summary.csv` and `results/B_country_paired_tests.csv` provide full numerators and denominators. The small number of countries and common global shocks limit generalization.
