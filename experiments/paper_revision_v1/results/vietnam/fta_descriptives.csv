@@ -1,0 +1,4 @@
+fta,new_gen,candidates,successes,rate
+False,False,63664,665.0,0.0104454636843428
+True,False,1532,35.0,0.022845953002610966
+True,True,2197,59.0,0.026854802002730997
