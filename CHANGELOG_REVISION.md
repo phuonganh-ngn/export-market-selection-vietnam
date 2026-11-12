@@ -31,3 +31,9 @@ Copy of `M1_Export_Market_Selection` (owner anhnp) under git. Commit `12a037d` i
 Pool-relative features and monotone constraints for LightGBM, rolling-origin tuning over a wider grid, probability-scale fusion,
 serialising full preprocessing pipelines, a lock file, the country-mapping gaps (ROU, COD, SRB, MNE, SSD, TLS, PSE), and a
 `predict_2025` path for the out-of-time test.
+
+## XAI (added after the list above)
+
+- `refit_lightgbm.py --save-models` stores every seed model (preprocessor + estimator) per year and task.
+- `experiments/paper_revision_v1/src/xai_decision.py`: SHAP fidelity and stability, swap attributions,
+  theory consistency, faithfulness deletion test, decision margins (results in the experiment README).

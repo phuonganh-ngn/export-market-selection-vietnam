@@ -14,7 +14,9 @@ import time
 import numpy as np
 import pandas as pd
 
-from revision_lib import CFG, PRED_DIR, TA, TB, zfill_hs2  # also sets sys.path
+import joblib
+
+from revision_lib import CFG, HERE, PRED_DIR, TA, TB, zfill_hs2  # also sets sys.path
 from experiments.explainable_reliability_gate_v1.src.task_audit import load_and_freeze  # write=False writes nothing
 from market_discovery import entry_training_mask
 from ml_models import fit_classifier, fit_regressor, lightgbm_bagging_params, tune_classifier, tune_regressor
@@ -22,8 +24,14 @@ from ml_models import fit_classifier, fit_regressor, lightgbm_bagging_params, tu
 YEARS = list(range(2018, 2025))
 
 
-def main() -> pd.DataFrame:
+MODEL_DIR = HERE / "models" / "lightgbm"
+
+
+def main(save_models: bool = False) -> pd.DataFrame:
+    """save_models=True writes every fitted seed model (preprocessor + estimator) to models/lightgbm/."""
     seeds = [int(s) for s in CFG["study"]["seeds"]]
+    if save_models:
+        MODEL_DIR.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
     panel, _ = load_and_freeze(write=False)
     panel = zfill_hs2(panel)
@@ -43,6 +51,9 @@ def main() -> pd.DataFrame:
         probs = []
         for s in seeds:
             m = fit_classifier("LightGBM", et, "entry_success", params, s)
+            if save_models:
+                joblib.dump({"bundle": m, "params": params, "year": year, "seed": s, "task": TA,
+                             "train_outcome_max": int(et.outcome_year.max())}, MODEL_DIR / f"discovery_{year}_seed{s}.joblib")
             probs.append(m.estimator.predict_proba(m.preprocessor.transform(ex[m.numeric_features + m.categorical_features]).astype(np.float32))[:, 1])
         probs = np.column_stack(probs)
         strict = ex.strict_inactive_verified.astype(bool).to_numpy()
@@ -54,7 +65,14 @@ def main() -> pd.DataFrame:
         rows.append(a)
         # expansion
         rp, _ = tune_regressor("LightGBM", train, lag=2, trials=CFG["study"]["tuning_trials"])
-        usd = np.column_stack([fit_regressor("LightGBM", train, rp, s, lag=2).predict(test, log_target=True) for s in seeds])
+        usd = []
+        for s in seeds:
+            reg = fit_regressor("LightGBM", train, rp, s, lag=2)
+            if save_models:
+                joblib.dump({"bundle": reg, "params": rp, "year": year, "seed": s, "task": TB,
+                             "train_outcome_max": int(train.outcome_year.max())}, MODEL_DIR / f"expansion_{year}_seed{s}.joblib")
+            usd.append(reg.predict(test, log_target=True))
+        usd = np.column_stack(usd)
         mb = test.task_b_eligible.astype(bool).to_numpy()
         hist = test.historical_export_value.to_numpy(float)[mb]
         b = test.loc[mb, ["destination_iso3", "hs2", "outcome_year"]].assign(task=TB)
@@ -74,4 +92,7 @@ def main() -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--save-models", action="store_true", help="write fitted seed models to models/lightgbm/")
+    main(save_models=ap.parse_args().save_models)

@@ -58,3 +58,32 @@ Some stored LambdaMART fits stopped after two boosting rounds. It is not adopted
 Sensitivity: an earlier bagged run that still contained the constant `common_official_language` column gave
 +0.059 for Hybrid - LightGBM (column sampling changes when a column is removed). Treat differences of about
 0.006 between bagged specifications as noise.
+
+## Decision-level explanations (`src/xai_decision.py`, discovery, 2018-2024)
+
+Needs `refit_lightgbm.py --save-models` first (70 seed models in `models/lightgbm/`, git-ignored); PPML is
+re-fitted per year and cached in `models/ppml/`. Outputs in `results/xai/`.
+
+- Fidelity: rebuilt LightGBM scores equal the evaluated scores (max diff 0); re-fitted PPML ranks equal the stored
+  PPML ranks (Spearman 1.000). Interventional TreeSHAP (log-odds, background of 100 same-year candidates):
+  additivity error 0 for three seeds, max 0.04 and 0.10 log-odds for seeds 11 and 37 (share of affected rows not yet checked).
+- Stability of feature-group importance: Spearman 0.98-0.995 across seeds within a year, 0.92 on average across
+  years (min 0.73). Trade demand is the top group in every year.
+- Swaps (1,558 pairs where the hybrid adds a destination to the LightGBM Top-10 and displaces another): PPML's
+  preference for the added destination comes mainly from trade demand (49% of the absolute log-mean difference,
+  favouring the added market in 94% of pairs) and market size (21%). LightGBM ranks the added market lower mainly
+  through governance (17%, against the added market in 74% of pairs) and purchasing power (12%, 72%) while still
+  favouring it on trade demand (67%). The hybrid therefore adds high-demand markets that LightGBM marks down for
+  weaker institutions and lower income.
+- Theory consistency of LightGBM attributions in the hybrid Top-10: 88% of absolute attribution has the expected
+  sign (61% of feature-row cases). High for import demand (99.6%), supplier concentration, population, GDP,
+  landlocked, distance (85%); low for GDP per capita (8%), internet use (19%), trade openness (29%): for first
+  entries LightGBM rewards poorer, less connected markets. PPML coefficients are conditional on destination
+  indicators, so time-invariant variables (colonial link, landlocked, contiguity) are not identified and their signs
+  are not interpretable; import demand, distance, GDP, population, regulatory quality and government effectiveness
+  have the expected sign in every year.
+- Faithfulness: neutralising (pool median) the group SHAP names as the main reason for a Top-10 placement removes
+  the destination from the Top-10 in 89.5% of 6,720 cases, against 15.4% for a random group.
+- Decision margins (3,360 destinations at hybrid ranks 11-15): an increase in destination import demand, with both
+  component models re-scored, brings 6% into the Top-10 within +10%, 47% within +50% and 94% within x4.5; median
+  needed +49%.
