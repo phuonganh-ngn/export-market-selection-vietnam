@@ -28,6 +28,10 @@ study:
   excluded_features: []
   # Tie rule for equal-weight rank fusion: iso3 (archived), first_component (PPML wins ties) or average.
   fusion_tie_rule: iso3
+  # Extra numeric features appended to every model (e.g. within-pool percentile ranks); empty = archived set.
+  extra_numeric_features: []
+  # LightGBM monotone constraints, feature -> +1 / -1 (missing-value indicators and one-hot columns stay free).
+  monotone_constraints: {}
 compute:
   chunk_rows: 500000
   model_threads: 4

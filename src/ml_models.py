@@ -55,7 +55,8 @@ def feature_columns(drop_groups: list[str] | None = None) -> tuple[list[str], li
     dropped = set(excluded_features())
     for group in drop_groups or []:
         dropped.update(FEATURE_GROUPS.get(group, []))
-    nums = [c for c in NUMERIC_FEATURES if c not in dropped]
+    extra = [c for c in (CFG["study"].get("extra_numeric_features") or []) if c not in NUMERIC_FEATURES]
+    nums = [c for c in NUMERIC_FEATURES + extra if c not in dropped]
     cats = list(CATEGORICAL_FEATURES)
     return nums, cats
 
@@ -90,6 +91,22 @@ def lightgbm_bagging_params() -> dict:
     if col < 1:
         out.update(colsample_bytree=col)
     return out
+
+
+def monotone_params(kind: str, params: dict, preprocessor) -> dict:
+    """Attach LightGBM monotone constraints (config: study.monotone_constraints, feature -> +1/-1).
+
+    The vector follows the preprocessor's output columns; missing-value indicators and one-hot
+    columns are unconstrained. Returns params unchanged for other models or when no constraint is set.
+    """
+    constraints = CFG["study"].get("monotone_constraints") or {}
+    if kind != "LightGBM" or not constraints:
+        return params
+    vector = []
+    for name in preprocessor.get_feature_names_out():
+        block, _, feature = name.partition("__")
+        vector.append(int(constraints.get(feature, 0)) if block == "numeric" and not feature.startswith("missingindicator_") else 0)
+    return {**params, "monotone_constraints": vector}
 
 
 def model_configs(kind: str, classification: bool = False, n_trials: int | None = None) -> list[dict]:
@@ -162,7 +179,7 @@ def tune_regressor(kind: str, train: pd.DataFrame, lag: int, drop_groups: list[s
     ytr = np.log1p(itrain.export_value_usd.clip(lower=0).to_numpy())
     best, best_score = None, np.inf
     for params in model_configs(kind, n_trials=trials):
-        model = build_estimator(kind, params, seed=11)
+        model = build_estimator(kind, monotone_params(kind, params, prep), seed=11)
         model.fit(xtr, ytr)
         pred_log = model.predict(xva)
         base = inverse_log1p_predictions(pred_log)
@@ -194,7 +211,7 @@ def tune_classifier(kind: str, train: pd.DataFrame, target_col: str, lag: int, t
         params = dict(params0)
         if kind == "XGBoost":
             params["scale_pos_weight"] = ratio
-        model = build_estimator(kind, params, seed=11, classification=True)
+        model = build_estimator(kind, monotone_params(kind, params, prep), seed=11, classification=True)
         model.fit(xtr, ytr)
         proba = model.predict_proba(xva)[:, 1]
         score = average_precision_score(yva, proba)
@@ -228,14 +245,14 @@ def fit_regressor(kind: str, train: pd.DataFrame, params: dict, seed: int, lag: 
     prep_val = make_preprocessor(itrain, drop_groups)
     xtr_val = prep_val.fit_transform(itrain[nums + cats]).astype(np.float32)
     xva = prep_val.transform(ival[nums + cats]).astype(np.float32)
-    estimator_val = build_estimator(kind, params, seed=seed)
+    estimator_val = build_estimator(kind, monotone_params(kind, params, prep_val), seed=seed)
     estimator_val.fit(xtr_val, np.log1p(itrain.export_value_usd.clip(lower=0).to_numpy()))
     val_pred = estimator_val.predict(xva)
     y_val = np.log1p(ival.export_value_usd.clip(lower=0).to_numpy())
     scale = validation_mae_scale(ival.export_value_usd.to_numpy(float), val_pred) if len(ival) else 1.0
     preprocessor = make_preprocessor(train, drop_groups)
     x = preprocessor.fit_transform(train[nums + cats]).astype(np.float32)
-    estimator = build_estimator(kind, params, seed=seed)
+    estimator = build_estimator(kind, monotone_params(kind, params, preprocessor), seed=seed)
     estimator.fit(x, np.log1p(train.export_value_usd.clip(lower=0).to_numpy()))
     return FittedModel(preprocessor, estimator, nums, cats, scale, FEATURE_GROUPS)
 
@@ -249,7 +266,7 @@ def fit_classifier(kind: str, train: pd.DataFrame, target_col: str, params: dict
     adjusted = dict(params)
     if kind == "XGBoost":
         adjusted["scale_pos_weight"] = max(1.0, float((y == 0).sum() / max(1, (y == 1).sum())))
-    estimator = build_estimator(kind, adjusted, seed=seed, classification=True)
+    estimator = build_estimator(kind, monotone_params(kind, adjusted, prep), seed=seed, classification=True)
     estimator.fit(x, y)
     return FittedModel(prep, estimator, nums, cats, 1.0, FEATURE_GROUPS)
 
