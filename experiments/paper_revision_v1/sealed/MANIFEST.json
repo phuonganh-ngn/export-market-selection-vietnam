@@ -1,0 +1,61 @@
+{
+  "created_utc": "2026-11-12T15:46:29+00:00",
+  "code_commit_before_sealing": "f0153d123bb4218d7270f5a74c91eb792aeff200",
+  "purpose": "Prospective shortlists for outcome years 2025 and 2026, fixed before BACI reports these years.",
+  "recommended": {
+    "discovery": "hybrid (rank_hybrid)",
+    "expansion": "Gravity-PPML (rank_ppml)"
+  },
+  "seeds": [
+    11,
+    23,
+    37,
+    51,
+    73
+  ],
+  "summary": {
+    "control_2024": {
+      "rows_matched": 14233,
+      "rows": 14233,
+      "max_abs_diff_lightgbm": 0.0
+    },
+    "2025": {
+      "discovery_candidates": 9827,
+      "expansion_candidates": 4381,
+      "pools": 192,
+      "train_outcome_max": 2023,
+      "leaves": [
+        31,
+        31
+      ]
+    },
+    "2026": {
+      "discovery_candidates": 9946,
+      "expansion_candidates": 3687,
+      "pools": 192,
+      "train_outcome_max": 2024,
+      "leaves": [
+        31,
+        31
+      ]
+    }
+  },
+  "outputs": {
+    "candidates_2025.parquet": "72a90409534201f450e2098c1a7fd2370716efa9519e370d1665ce410f49a49e",
+    "shortlist_2025.csv": "bc05f1835de25fe1fe3175f767afc89db1fa6c8f56d063764eeaa9ddd3490d5e",
+    "candidates_2026.parquet": "100882cedf71767d86872d91382bfeb22efdc252c358d3b15b4e42d001725d85",
+    "shortlist_2026.csv": "4a7261b7dd91ea36806ca3bdb8cb91d4c6960f862d41b5a61d7ff5cdb43c8c79"
+  },
+  "inputs": {
+    "panel_lag2.parquet": "58f8f7112c1a48cdb39948d2cdab0f1af4c23547287af20ee6ad8a90c031a9c5",
+    "config.yaml": "68430074f1bf2e349ab8081ec622cd100f2accb068ab2a32d3e63960b66cf30e"
+  },
+  "code": {
+    "experiments/paper_revision_v1/src/sealed_shortlists.py": "b08cf911fa6bb2bb75b13794866bc80d4c208f4c44ae2f70f7799dd8748dcb35",
+    "experiments/paper_revision_v1/src/revision_lib.py": "71ad4217713e60ef1cb0fba91cf0ce82cf51ab10cfe3b44939ec1b3031a7fc82",
+    "src/ml_models.py": "a28e8860c1e2e066b6c5d8a75d98bdc8ab76c8b104833b4e857c42272c030885",
+    "src/gravity_ppml.py": "f31c2a7ada6f270a50c9344f5db72034d99040f729c40df8c0726a56112f7cef",
+    "src/fusion.py": "1418f35969d72ef4e939e3458a55e15a876584b0c375197c5d2a3bc225131c5d",
+    "src/market_discovery.py": "4bb65faa678c212072af917a640bd02f1ca0f087d10d52e5fdbf370f23fffcfc"
+  }
+}
