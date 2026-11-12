@@ -1,0 +1,9 @@
+level,year,mean_spearman,min_spearman,top3
+seeds,2018,0.9927272727272726,0.9878787878787878,"historical_trade, trade_demand, product_indicator"
+seeds,2019,0.983030303030303,0.9636363636363635,"historical_trade, trade_demand, product_indicator"
+seeds,2020,0.9951515151515151,0.9878787878787878,"historical_trade, trade_demand, product_indicator"
+seeds,2021,0.9903030303030305,0.9757575757575757,"historical_trade, trade_demand, product_indicator"
+seeds,2022,0.9733333333333333,0.9515151515151514,"historical_trade, trade_demand, macroeconomic_size"
+seeds,2023,0.9951515151515151,0.9878787878787878,"historical_trade, trade_demand, product_indicator"
+seeds,2024,0.9696969696969697,0.9393939393939393,"historical_trade, trade_demand, governance"
+years,all,0.9261183261183261,0.7939393939393938,"historical_trade, trade_demand, product_indicator"

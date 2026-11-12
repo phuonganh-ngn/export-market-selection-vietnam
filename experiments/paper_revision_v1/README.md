@@ -87,3 +87,23 @@ re-fitted per year and cached in `models/ppml/`. Outputs in `results/xai/`.
 - Decision margins (3,360 destinations at hybrid ranks 11-15): an increase in destination import demand, with both
   component models re-scored, brings 6% into the Top-10 within +10%, 47% within +50% and 94% within x4.5; median
   needed +49%.
+
+## Decision-level explanations for expansion (`src/xai_expansion.py`)
+
+Same checks, LightGBM regressor (log1p USD), swaps between the PPML and LightGBM Top-10. Outputs in `results/xai_expansion/`.
+
+- Fidelity: rebuilt LightGBM scores and re-fitted PPML ranks match exactly; SHAP additivity error above 0.01 in
+  0.04% of rows for two seeds, zero for the others.
+- Stability: Spearman 0.97-0.995 across seeds, 0.93 across years (min 0.79). Export history is the top group
+  every year, then trade demand.
+- Swaps (1,953 pairs): disagreement between the models is mostly about export history (59% of PPML's and 62% of
+  LightGBM's absolute differences) and then trade demand (18% / 14%). PPML-only destinations have a median
+  historical export of USD 119k against USD 6k for LightGBM-only ones, and reach the USD 50k gain in 40% of cases
+  against 29%: PPML backs markets where Vietnam already sells something, LightGBM chases very small footholds.
+- Theory consistency (LightGBM attributions in the PPML Top-10): 89% of absolute attribution has the expected sign
+  (68% of cases); low for demand growth (25%), rule of law and trade openness (44%), GDP per capita (50%).
+- Faithfulness: neutralising the main attributed group removes the destination from the LightGBM Top-10 in 75.6%
+  of 6,677 cases, against 13.8% for a random group.
+- Margins (3,227 destinations at PPML ranks 11-15): +10% import demand is enough for 2.5%, +50% for 23%; median
+  needed +92%; 27% not reachable within x4.5. Expansion shortlists are harder to move with demand alone than
+  discovery shortlists.

@@ -37,3 +37,4 @@ serialising full preprocessing pipelines, a lock file, the country-mapping gaps 
 - `refit_lightgbm.py --save-models` stores every seed model (preprocessor + estimator) per year and task.
 - `experiments/paper_revision_v1/src/xai_decision.py`: SHAP fidelity and stability, swap attributions,
   theory consistency, faithfulness deletion test, decision margins (results in the experiment README).
+- `xai_expansion.py`: the same analysis for expansion (PPML vs LightGBM Top-10 swaps).
