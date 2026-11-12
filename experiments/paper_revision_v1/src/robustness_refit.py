@@ -17,7 +17,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from revision_lib import CFG, KEY, PRED_DIR, RES_DIR, TA, add_rules_and_hybrid, load_stored_candidates, pool_metrics, zfill_hs2
+from revision_lib import CFG, KEY, PRED_DIR, RES_DIR, TA, TB, add_rules_and_hybrid, load_stored_candidates, pool_metrics, zfill_hs2
 import statistics as st
 from experiments.explainable_reliability_gate_v1.src.task_audit import load_and_freeze
 from market_discovery import entry_training_mask
@@ -168,7 +168,57 @@ def main(parts):
             + "\nshare with CI above 0: " + r.assign(pos=r.ci_low > 0).groupby("contrast").pos.mean().round(2).to_string())
 
 
+def seeds_expansion(panel, reps=1000):
+    """Ten disjoint seed sets for the expansion regressor; tuned leaves held fixed per year."""
+    from ml_models import fit_regressor, tune_regressor
+    stored = load_stored_candidates(); stored = stored[stored.task == TB]
+    refit = zfill_hs2(pd.read_parquet(PRED_DIR / "lgbm_refit_scores.parquet"))
+    base = stored.drop(columns="lightgbm_score").merge(refit[KEY + ["lightgbm_score"]], on=KEY, validate="one_to_one")
+    data, fixed = {}, {}
+    for year in YEARS:
+        train = panel.loc[panel.outcome_observed.astype(bool) & panel.export_value_usd.notna() & panel.destination_import_demand.gt(0)
+                          & panel.outcome_year.le(year - 2)]
+        test = panel.loc[panel.outcome_year.eq(year) & panel.destination_import_demand.gt(0) & panel.task_b_eligible.astype(bool)]
+        data[year] = (train, test)
+        fixed[year] = tune_regressor("LightGBM", train, lag=2, trials=CFG["study"]["tuning_trials"])[0]
+
+    def ev(frame, label):
+        d = add_rules_and_hybrid(frame)
+        rows = []
+        for (hs2, yr), g in d.groupby(["hs2", "outcome_year"]):
+            rows.append({"hs2": hs2, "year": yr, **{n: pool_metrics(g, c, TB, 10)["ndcg"] for n, c in
+                         (("PPML", "ppml_score"), ("LightGBM", "lightgbm_score"), ("Hybrid", "hybrid_score"), ("ImportDemand", "import_demand_score"))}})
+        w = pd.DataFrame(rows).dropna(subset=["PPML"])
+        out = []
+        for b in ("Hybrid", "LightGBM", "ImportDemand"):
+            r = st.paired_contrast_inference((w.PPML - w[b]).to_numpy(float), w.hs2.to_numpy(), w.year.to_numpy(), reps=reps)
+            out.append({"variant": label, "contrast": f"PPML - {b}", "pools": len(w), "mean_ppml": w.PPML.mean(), "mean_b": w[b].mean(),
+                        **{k: r[k] for k in ("estimate", "ci_low", "ci_high", "p_signflip", "years_positive", "n_years")}})
+        return out
+
+    res = ev(base, "main seeds")
+    for k in range(10):
+        seeds = [1000 * (k + 1) + j for j in range(5)]
+        rows = []
+        for year, (train, test) in data.items():
+            usd = np.mean([fit_regressor("LightGBM", train, fixed[year], s, lag=2).predict(test, log_target=True) for s in seeds], axis=0)
+            rows.append(test[["destination_iso3", "hs2", "outcome_year"]].assign(task=TB, lightgbm_score=np.maximum(0, usd - test.historical_export_value.to_numpy(float))))
+        sc = pd.concat(rows, ignore_index=True)
+        f = base.drop(columns="lightgbm_score").merge(sc[KEY + ["lightgbm_score"]], on=KEY, how="left", validate="one_to_one")
+        res += [dict(r, seed_set=k + 1) for r in ev(f, f"seed set {k + 1}")]
+        pd.DataFrame(res).to_csv(OUT / "seed_sets_expansion.csv", index=False)
+        log(f"expansion seed set {k + 1}: PPML - Hybrid {res[-3]['estimate']:.4f}, PPML - LightGBM {res[-2]['estimate']:.4f}")
+    r = pd.DataFrame(res); r = r[r.variant != "main seeds"]
+    log("\n" + r.groupby("contrast").estimate.agg(["mean", "std", "min", "max"]).round(4).to_string()
+        + "\nshare with CI above 0: " + r.assign(pos=r.ci_low > 0).groupby("contrast").pos.mean().round(2).to_string())
+
+
 if __name__ == "__main__":
+    import sys
+    if "--expansion-seeds" in sys.argv:
+        p, _ = load_and_freeze(write=False)
+        seeds_expansion(zfill_hs2(p))
+        raise SystemExit
     ap = argparse.ArgumentParser()
     ap.add_argument("--parts", default="membership,threshold,strict,seeds")
     main(ap.parse_args().parts.split(","))
