@@ -1,0 +1,16 @@
+task,metric,PPML,LightGBM,Hybrid,ImportDemand,best
+Task_A_new_entry,auc_pooled,3.0,1.0,2.0,4.0,LightGBM
+Task_A_new_entry,ap_pooled,3.0,2.0,1.0,4.0,Hybrid
+Task_A_new_entry,precision_at_1000_pooled,3.0,1.0,2.0,4.0,LightGBM
+Task_A_new_entry,auc_within_pool_mean,3.0,2.0,1.0,4.0,Hybrid
+Task_A_new_entry,ndcg10_within_pool,2.0,4.0,1.0,3.0,Hybrid
+Task_A_new_entry,hit10_within_pool,2.0,3.0,1.0,4.0,Hybrid
+Task_B_existing_underexploited,auc_pooled,1.0,4.0,2.0,3.0,PPML
+Task_B_existing_underexploited,ap_pooled,1.0,3.0,2.0,4.0,PPML
+Task_B_existing_underexploited,precision_at_1000_pooled,2.0,1.0,3.0,4.0,LightGBM
+Task_B_existing_underexploited,auc_within_pool_mean,1.0,4.0,2.0,3.0,PPML
+Task_B_existing_underexploited,spearman_increment_pooled,1.0,3.0,2.0,4.0,PPML
+Task_B_existing_underexploited,rmse_log_increment,2.0,1.0,,,LightGBM
+Task_B_existing_underexploited,mae_log_increment,2.0,1.0,,,LightGBM
+Task_B_existing_underexploited,ndcg10_within_pool,1.0,4.0,3.0,2.0,PPML
+Task_B_existing_underexploited,hit10_within_pool,1.0,4.0,2.0,3.0,PPML
