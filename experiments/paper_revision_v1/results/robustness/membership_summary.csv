@@ -1,0 +1,2 @@
+pools_ndcg,gain,membership_fwd,ordering_fwd,membership_rev,ordering_rev,share_membership_fwd,share_membership_rev,pools_all,added,added_success,displaced_success,mean_shared,mean_jaccard
+364,0.06489783832953734,0.034517603010615835,0.030380235318921502,0.02722970830618985,0.03766813002334749,0.5318760054124273,0.41957804769895746,672,1558,85.0,42.0,7.681547619047619,0.6376497714470405
