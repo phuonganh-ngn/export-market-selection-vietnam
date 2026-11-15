@@ -21,7 +21,7 @@ from scipy.stats import spearmanr
 from revision_lib import HERE, KEY, PRED_DIR, RES_DIR, TB, load_stored_candidates, zfill_hs2
 from experiments.explainable_reliability_gate_v1.src.task_audit import load_and_freeze
 from temporal_validation import FEATURE_GROUPS
-from xai_decision import EXPECTED, SEEDS, YEARS, column_meta, dense, pool_rank, ppml_design, ppml_logmean
+from xai_decision import EXPECTED, SEEDS, YEARS, column_meta, dense, donor_values, pool_rank, ppml_design, ppml_logmean
 
 warnings.filterwarnings("ignore")
 OUT = RES_DIR / "xai_expansion"; OUT.mkdir(parents=True, exist_ok=True)
@@ -63,11 +63,14 @@ def main():
         meta, ssum = None, None
         for s, m in zip(SEEDS, models):
             cols = m.numeric_features + m.categorical_features
+            # float64 inputs: rounding to float32 first breaks additivity for the regressor (tested), so it is not used here
             xe, xb = (dense(m.preprocessor.transform(f[cols])).astype(np.float64) for f in (expl, bg))
             ex = shap.TreeExplainer(m.estimator, data=xb, feature_perturbation="interventional", model_output="raw")
             sv = np.asarray(ex.shap_values(xe, check_additivity=False))
             err = np.abs(sv.sum(1) + np.atleast_1d(ex.expected_value)[-1] - m.estimator.predict(xe))
             checks.append({"year": year, "check": f"shap_additivity_share_rows_err_gt_0.01_seed{s}", "value": float((err > 0.01).mean())})
+            checks.append({"year": year, "check": f"shap_additivity_share_gt_1e-6_seed{s}", "value": float((err > 1e-6).mean())})
+            checks.append({"year": year, "check": f"shap_additivity_share_gt_1e-3_seed{s}", "value": float((err > 1e-3).mean())})
             checks.append({"year": year, "check": f"shap_additivity_max_abs_err_seed{s}", "value": float(err.max())})
             meta = meta if meta is not None else column_meta(m.preprocessor.get_feature_names_out())
             for gname, v in pd.DataFrame(np.abs(sv), columns=meta.group).T.groupby(level=0).sum().T.mean().items():
@@ -105,11 +108,15 @@ def main():
                 continue
             main_g = row_g.idxmax(); ctrl = rng.choice([g for g in GROUPS if g != main_g])
             pool = cand[cand.hs2 == cand.at[idx, "hs2"]]; others = pool.drop(index=idx)
-            for kind, grp in (("attributed", main_g), ("random", ctrl)):
+            for kind, grp, how in (("attributed", main_g, "median"), ("random", ctrl, "median"),
+                                   ("attributed_donor", main_g, "donor"), ("random_donor", ctrl, "donor")):
                 mod = cand.loc[[idx]].copy()
-                for f in FEATURE_GROUPS[grp]:
-                    if f in mod.columns:
+                fs = [f for f in FEATURE_GROUPS[grp] if f in mod.columns]
+                if how == "median":
+                    for f in fs:
                         mod[f] = pool[f].median()
+                else:
+                    mod[fs] = donor_values(pool, idx, grp).to_numpy()
                 new = max(0.0, float(lgbm_usd(models, mod)[0]) - cand.at[idx, "historical_export_value"])
                 nr = 1 + int((others.lightgbm_score > new).sum()) + int(((others.lightgbm_score == new) & (others.destination_iso3 < cand.at[idx, "destination_iso3"])).sum())
                 faith_rows.append({"year": year, "kind": kind, "group": grp, "rank_before": int(cand.at[idx, "lgb_rank"]), "rank_after": nr, "left_top10": nr > 10})

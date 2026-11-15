@@ -48,6 +48,17 @@ EXPECTED = {"log_destination_import_demand": 1, "destination_import_demand_growt
 NEUTRALISABLE = [g for g in FEATURE_GROUPS if g != "historical_trade"]   # history is constant for discovery candidates
 
 
+def donor_values(pool, idx, grp):
+    """Values of feature group `grp` taken from a real candidate in the same pool: the one closest to `idx` on all
+    other feature groups (z-scored within the pool, missing values at the mean). Avoids synthetic input combinations."""
+    other = [f for g, fs in FEATURE_GROUPS.items() if g != grp for f in fs if f in pool.columns]
+    z = pool[other].astype(float)
+    sd = z.std(ddof=0).replace(0, np.nan)
+    z = ((z - z.mean()) / sd).fillna(0.0)
+    dist = ((z - z.loc[idx]) ** 2).sum(axis=1).drop(index=idx)
+    return pool.loc[dist.idxmin(), [f for f in FEATURE_GROUPS[grp] if f in pool.columns]]
+
+
 def column_meta(names) -> pd.DataFrame:
     rows = []
     for n in names:
@@ -140,8 +151,9 @@ def main():
         meta = None; shap_sum = None
         for s, m in zip(SEEDS, models):
             cols = m.numeric_features + m.categorical_features
-            xe = dense(m.preprocessor.transform(expl[cols])).astype(np.float64)
-            xb = dense(m.preprocessor.transform(bg[cols])).astype(np.float64)
+            # LightGBM was trained on float32 inputs: round to float32 first so SHAP sees the same split decisions
+            xe = dense(m.preprocessor.transform(expl[cols])).astype(np.float32).astype(np.float64)
+            xb = dense(m.preprocessor.transform(bg[cols])).astype(np.float32).astype(np.float64)
             ex = shap.TreeExplainer(m.estimator, data=xb, feature_perturbation="interventional", model_output="raw")
             sv = ex.shap_values(xe, check_additivity=False)
             sv = sv[1] if isinstance(sv, list) else sv
@@ -149,7 +161,10 @@ def main():
                 sv = sv[:, :, 1]
             ev = np.atleast_1d(ex.expected_value)[-1]
             margin = m.estimator.predict(xe, raw_score=True)
-            checks.append({"year": year, "check": f"shap_additivity_max_abs_err_seed{s}", "value": float(np.abs(sv.sum(1) + ev - margin).max())})
+            err = np.abs(sv.sum(1) + ev - margin)
+            checks.append({"year": year, "check": f"shap_additivity_max_abs_err_seed{s}", "value": float(err.max())})
+            checks.append({"year": year, "check": f"shap_additivity_share_gt_1e-6_seed{s}", "value": float((err > 1e-6).mean())})
+            checks.append({"year": year, "check": f"shap_additivity_share_gt_1e-3_seed{s}", "value": float((err > 1e-3).mean())})
             if meta is None:
                 meta = column_meta(m.preprocessor.get_feature_names_out())
             grp = pd.DataFrame(np.abs(sv), columns=meta.group).T.groupby(level=0).sum().T.mean()
@@ -198,11 +213,15 @@ def main():
             main = row_g.idxmax()
             ctrl = rng.choice([g for g in NEUTRALISABLE if g != main])
             pool = cand[cand.hs2 == cand.at[idx, "hs2"]]
-            for kind, grp in (("attributed", main), ("random", ctrl)):
+            for kind, grp, how in (("attributed", main, "median"), ("random", ctrl, "median"),
+                                   ("attributed_donor", main, "donor"), ("random_donor", ctrl, "donor")):
                 mod = cand.loc[[idx]].copy()
-                for f in FEATURE_GROUPS[grp]:
-                    if f in mod.columns:
+                fs = [f for f in FEATURE_GROUPS[grp] if f in mod.columns]
+                if how == "median":
+                    for f in fs:
                         mod[f] = pool[f].median()
+                else:
+                    mod[fs] = donor_values(pool, idx, grp).to_numpy()
                 new = lgbm_prob(models, mod)[0]
                 others = pool.drop(index=idx)
                 new_rank = 1 + int((others.lightgbm_score > new).sum()) + int(((others.lightgbm_score == new) & (others.destination_iso3 < cand.at[idx, "destination_iso3"])).sum())
