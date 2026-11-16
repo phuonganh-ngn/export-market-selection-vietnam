@@ -1,4 +1,4 @@
-"""Review round 4, major items: few-cluster p-values, PPML penalty sensitivity, economic scale of discovery entries."""
+"""Robustness checks: few-cluster p-values for the two-way t, sensitivity to the PPML penalty, and the economic scale of discovery entries."""
 import time, warnings
 import numpy as np, pandas as pd
 from scipy import stats

@@ -1,4 +1,4 @@
-"""Expansion NDCG@10 under alternative relevance gradings (audit of the graded-gain threshold)."""
+"""Expansion NDCG@10 under alternative relevance gradings: the primary grading (first grade at USD 50,000), the earlier grading (first grade at about USD 450,000), a binary relevance and a continuous gain."""
 import numpy as np, pandas as pd, statistics as st
 import fusion
 from revision_lib import CFG, KEY, PRED_DIR, RES_DIR, TB, add_rules_and_hybrid, load_stored_candidates, zfill_hs2
@@ -14,10 +14,10 @@ d.loc[sub.index, "H_E_pois"] = -fz.loc[sub.index, "fused_rank"].to_numpy()
 d = d[d.label_observed.astype(bool)].reset_index(drop=True)
 inc = np.maximum(0, pd.to_numeric(d.realized_incremental_export_usd, errors="coerce").fillna(0).to_numpy(float))
 T = 50_000
-r_paper = np.minimum(4, np.floor(np.log10(1 + inc / T)))
-r_fix = np.where(inc >= T, np.minimum(4, 1 + np.floor(np.log10(np.maximum(inc, T) / T))), 0)
-G = {"paper": 2 ** r_paper - 1, "aligned": 2 ** r_fix - 1, "binary": (inc >= T).astype(float), "logcont": np.log1p(inc / T)}
-print("share inc>=50k", (inc >= T).mean(), " share paper grade>0", (r_paper > 0).mean(), " min inc with paper grade>0", inc[r_paper > 0].min())
+r_earlier = np.minimum(4, np.floor(np.log10(1 + inc / T)))
+r_primary = np.where(inc >= T, np.minimum(4, 1 + np.floor(np.log10(np.maximum(inc, T) / T))), 0)
+G = {"earlier_450k": 2 ** r_earlier - 1, "primary_50k": 2 ** r_primary - 1, "binary": (inc >= T).astype(float), "logcont": np.log1p(inc / T)}
+print("share inc>=50k", (inc >= T).mean(), " share with earlier grade>0", (r_earlier > 0).mean(), " min increment with earlier grade>0", inc[r_earlier > 0].min())
 models = {"PPML": "ppml_score", "Hybrid": "hybrid_score", "LightGBM": "lightgbm_score", "ImportDemand": "import_demand_score",
           "E_pois": "E_pois", "E_pinc": "E_pinc", "E_rank": "E_rank", "H_E_pois": "H_E_pois"}
 def ndcg(y, s, iso, k=10):

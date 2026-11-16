@@ -47,9 +47,14 @@ NDCG@10, 2018-2024:
 | Discovery (364 pools) | Hybrid - LightGBM | +0.065 | [0.044, 0.086] | 7/7 |
 | | Hybrid - PPML | +0.050 | [0.031, 0.070] | 7/7 |
 | | Hybrid - import demand | +0.063 | [0.042, 0.085] | 7/7 |
-| Expansion (562 pools) | PPML - Hybrid | +0.026 | [0.010, 0.044] | 6/7 |
-| | PPML - LightGBM | +0.063 | [0.040, 0.086] | 7/7 |
-| | PPML - import demand | +0.022 | [0.005, 0.039] | 6/7 |
+| Expansion (653 pools) | PPML - Hybrid | +0.021 | [0.008, 0.034] | 6/7 |
+| | PPML - LightGBM | +0.054 | [0.035, 0.075] | 7/7 |
+| | PPML - import demand | +0.022 | [0.009, 0.036] | 6/7 |
+
+Expansion relevance is graded from the USD 50,000 success threshold: grade 0 below it, then
+`min(4, 1 + floor(log10(increment / 50,000)))`, so grades start at USD 50k, 500k, 5m and 50m
+(`revision_lib.expansion_grade`). An earlier grading, `floor(log10(1 + increment / 50,000))`, gave its first grade
+only at about USD 450k; results under it are kept as a robustness check (`src/grading_sensitivity.py`).
 
 LambdaMART (stored, frozen window) is worse than LightGBM in discovery (-0.060, negative in all three years) and
 a PPML + LambdaMART hybrid is worse than the PPML + LightGBM hybrid (-0.038); in expansion it only matches PPML.
@@ -66,7 +71,8 @@ re-fitted per year and cached in `models/ppml/`. Outputs in `results/xai/`.
 
 - Fidelity: rebuilt LightGBM scores equal the evaluated scores (max diff 0); re-fitted PPML ranks equal the stored
   PPML ranks (Spearman 1.000). Interventional TreeSHAP (log-odds, background of 100 same-year candidates):
-  additivity error 0 for three seeds, max 0.04 and 0.10 log-odds for seeds 11 and 37 (share of affected rows not yet checked).
+  additivity error 0 for three seeds, max 0.04 and 0.10 log-odds for seeds 11 and 37. The affected rows are 15 of 15,687
+  (`src/xai_additivity_sensitivity.py`); excluding them changes group shares by at most 0.00014.
 - Stability of feature-group importance: Spearman 0.98-0.995 across seeds within a year, 0.92 on average across
   years (min 0.73). Trade demand is the top group in every year.
 - Swaps (1,558 pairs where the hybrid adds a destination to the LightGBM Top-10 and displaces another): PPML's
@@ -107,3 +113,41 @@ Same checks, LightGBM regressor (log1p USD), swaps between the PPML and LightGBM
 - Margins (3,227 destinations at PPML ranks 11-15): +10% import demand is enough for 2.5%, +50% for 23%; median
   needed +92%; 27% not reachable within x4.5. Expansion shortlists are harder to move with demand alone than
   discovery shortlists.
+
+## Further analyses
+
+Run from the project root with `PYTHONPATH=src:experiments/paper_revision_v1/src:.`. Outputs are written under
+`experiments/paper_revision_v1/results/`.
+
+| Script | What it does | Output |
+|---|---|---|
+| `src/aligned_baselines.py` | LightGBM re-fitted under objectives aligned with the decisions (LambdaRank, Poisson on value, L2 and Poisson on the increment), each also fused with PPML | `aligned/` |
+| `src/aligned_regrade.py` | Updates the aligned baselines after a change of the expansion grading without a full re-fit | `aligned/` |
+| `src/subperiods.py` | Main contrasts for windows starting in 2018 to 2022 (length of training history) | `robustness/subperiods.csv` |
+| `src/grading_sensitivity.py` | Expansion NDCG@10 under the primary, the earlier, a binary and a continuous relevance | `robustness/expansion_grading_*.csv` |
+| `src/mechanism_checks.py` | Rank fusions of each estimated model with the import-demand rule; gain against training-set size | `robustness/mechanism_*.csv` |
+| `src/stacking.py` | Entry classifier with out-of-time PPML predictions as features, against the rank fusion | `robustness/stacking_*.csv` |
+| `src/robustness_inference_penalty_scale.py` | Few-cluster p-values for the two-way t, PPML penalty sensitivity, economic scale of entries | `robustness/ppml_penalty.csv` and console |
+| `src/robustness_threshold_equivalence.py` | Success threshold at constant 2018 prices; 90% intervals for equivalence in expansion | `robustness/real_threshold.csv` and console |
+| `src/robustness_refit.py` | Membership split, re-trained thresholds, strict-zero training population, seed sets | `robustness/` |
+| `src/group_ablation.py` | Re-fits all models without each feature group | `ablation/` |
+| `src/vietnam_specific.py` | Trade agreements, main markets, product groups | `vietnam/` |
+| `src/decision_utility.py` | Screening yield and capped realised value | `utility/` |
+| `src/pointwise_vs_decision.py` | Pointwise accuracy metrics against shortlist quality | `pointwise_vs_decision*.csv` |
+| `src/xai_hybrid_faithfulness.py` | Deletion test at the level of the hybrid decision: both component scores recomputed | `xai/hybrid_faithfulness_*.csv` |
+| `src/sealed_shortlists.py` | Prospective shortlists for outcome years 2025 and 2026 with a hash manifest | `sealed/` |
+
+Main findings of these analyses (discovery NDCG@10 unless stated):
+
+- Objective alignment: the hybrid leads a LambdaRank LightGBM by 0.050 (HS2-block interval above zero, year-level Holm 0.19).
+  In expansion PPML is not distinguishable from a Poisson LightGBM on the export level (+0.002) or from LambdaRank
+  on the graded gain (+0.004).
+- Training history: the hybrid's gain over LightGBM is 0.039 for 2020-2024 and 0.042 for 2021-2024.
+- Source of the gain: fusing the classifier with the import-demand rule gives +0.042 of the hybrid's +0.065;
+  PPML adds a further 0.023 over 2018-2024 but 0.014 [-0.004, 0.032] over 2020-2024. Stacking gives +0.008.
+- Hybrid-level deletion test: replacing the group with the largest combined attribution removes the destination
+  from the hybrid Top-10 in 97.5% of 6,720 cases, against 14.1% for a random group (49.5% against 9.5% with the
+  values of the nearest real candidate).
+
+The evaluation is retrospective: the 2022-2024 outcomes were inspected during development, and the mechanism
+checks, the expansion grading and the subgroup analyses were specified after the main results had been seen.

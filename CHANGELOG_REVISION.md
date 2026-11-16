@@ -38,3 +38,13 @@ serialising full preprocessing pipelines, a lock file, the country-mapping gaps 
 - `experiments/paper_revision_v1/src/xai_decision.py`: SHAP fidelity and stability, swap attributions,
   theory consistency, faithfulness deletion test, decision margins (results in the experiment README).
 - `xai_expansion.py`: the same analysis for expansion (PPML vs LightGBM Top-10 swaps).
+
+## Later revision rounds
+
+- Expansion relevance grading now starts at the USD 50,000 success threshold (`revision_lib.expansion_grade`);
+  all expansion results were regenerated and the earlier grading is kept as a robustness check.
+- Added `aligned_baselines.py`, `aligned_regrade.py`, `subperiods.py`, `grading_sensitivity.py`, `mechanism_checks.py`,
+  `stacking.py`, `robustness_inference_penalty_scale.py`, `robustness_threshold_equivalence.py` and
+  `xai_hybrid_faithfulness.py` (see the README of `experiments/paper_revision_v1`).
+- Removed absolute local paths from the scripts; `aligned_regrade.py` takes the previous run's files as arguments.
+

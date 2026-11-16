@@ -1,4 +1,4 @@
-"""Review round 4, minor items: constant-price success threshold (re-labelled at evaluation) and 90% intervals for equivalence."""
+"""Robustness checks: success threshold at constant 2018 prices (re-labelled at evaluation) and 90% intervals for equivalence in expansion."""
 import numpy as np, pandas as pd
 import revision_lib as rl
 from revision_lib import *  # noqa
