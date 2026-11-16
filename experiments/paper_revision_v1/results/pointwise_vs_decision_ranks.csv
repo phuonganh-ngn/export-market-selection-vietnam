@@ -12,5 +12,5 @@ Task_B_existing_underexploited,auc_within_pool_mean,1.0,4.0,2.0,3.0,PPML
 Task_B_existing_underexploited,spearman_increment_pooled,1.0,3.0,2.0,4.0,PPML
 Task_B_existing_underexploited,rmse_log_increment,2.0,1.0,,,LightGBM
 Task_B_existing_underexploited,mae_log_increment,2.0,1.0,,,LightGBM
-Task_B_existing_underexploited,ndcg10_within_pool,1.0,4.0,3.0,2.0,PPML
+Task_B_existing_underexploited,ndcg10_within_pool,1.0,4.0,2.0,3.0,PPML
 Task_B_existing_underexploited,hit10_within_pool,1.0,4.0,2.0,3.0,PPML
