@@ -2,7 +2,7 @@
 
 All metric definitions follow experiments/final_hybrid_economic_validation_v1/src/final_validation.py
 (the code behind the archived numbers): binary entry gain for discovery, capped graded gain
-2^min(4, floor(log10(1 + increment / 50,000))) - 1 for expansion, DCG with log2(rank + 1) discounts,
+2^grade - 1 for expansion (grade 1 from USD 50k, 2 from 500k, 3 from 5m, 4 from 50m), DCG with log2(rank + 1) discounts,
 NDCG undefined only for pools without any relevant destination.
 """
 from __future__ import annotations
@@ -52,6 +52,14 @@ def attach_next_year_value(frame: pd.DataFrame) -> pd.DataFrame:
 
 
 # ---------------------------------------------------------------- metrics
+def expansion_grade(pos, threshold: float = 50_000) -> np.ndarray:
+    """Graded relevance of a positive increment: 0 below the threshold, then 1 + floor(log10(pos / threshold)), capped at 4
+    (grades start at USD 50k, 500k, 5m and 50m). Earlier drafts used floor(log10(1 + pos / threshold)), whose first grade
+    starts only at about USD 450k; see grading_sensitivity.py."""
+    pos = np.maximum(0.0, np.asarray(pos, float))
+    return np.where(pos >= threshold, np.minimum(4, 1 + np.floor(np.log10(np.maximum(pos, threshold) / threshold))), 0).astype(int)
+
+
 def gain(frame: pd.DataFrame, task: str, persistent: bool = False) -> np.ndarray:
     if task == TA:
         y = pd.to_numeric(frame.entry_success, errors="coerce").to_numpy(float)
@@ -61,7 +69,7 @@ def gain(frame: pd.DataFrame, task: str, persistent: bool = False) -> np.ndarray
                          ((frame.export_value_usd.to_numpy(float) >= 50_000) & (nxt >= 50_000)).astype(float))
         return y
     pos = np.maximum(0.0, pd.to_numeric(frame.realized_incremental_export_usd, errors="coerce").to_numpy(float))
-    return np.exp2(np.minimum(4, np.floor(np.log10(1 + pos / 50_000))).astype(int)) - 1.0
+    return np.exp2(expansion_grade(pos)) - 1.0
 
 
 def _dcg(x: np.ndarray, k: int) -> float:

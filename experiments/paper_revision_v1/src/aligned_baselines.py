@@ -22,7 +22,7 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 
-from revision_lib import CFG, KEY, PRED_DIR, RES_DIR, TA, TB, add_rules_and_hybrid, gain, load_stored_candidates, pool_metrics, zfill_hs2
+from revision_lib import expansion_grade, CFG, KEY, PRED_DIR, RES_DIR, TA, TB, add_rules_and_hybrid, gain, load_stored_candidates, pool_metrics, zfill_hs2
 import fusion
 import statistics as st
 from experiments.explainable_reliability_gate_v1.src.task_audit import load_and_freeze
@@ -60,7 +60,7 @@ def ndcg10(y, s, groups):
 
 
 def graded(delta):
-    return np.minimum(4, np.floor(np.log10(1 + np.maximum(0, delta) / 50_000))).astype(int)
+    return expansion_grade(delta)
 
 
 class Spec:
