@@ -1,6 +1,6 @@
 # Revision changes (2026-11)
 
-Copy of `M1_Export_Market_Selection` (owner anhnp) under git. Commit `12a037d` is the untouched baseline;
+Copy of the original project under git. Commit `12a037d` is the untouched baseline;
 `git diff 12a037d` shows every change. Raw data and archived models are symlinks to the original read-only repository.
 
 ## Bugs fixed

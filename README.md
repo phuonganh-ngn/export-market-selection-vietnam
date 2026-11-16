@@ -54,7 +54,6 @@ Qualifications that the manuscript reports alongside these numbers:
 | `tests/` | Unit tests for aggregation, leakage, ranking, fusion, NDCG and inference |
 | `docs/` | Research design, methodology and data dictionary |
 | `reports/` | Data audit, coverage tables and source registry with file hashes |
-| `manuscript/` | Earlier manuscript drafts and their audit files |
 | `CHANGELOG_REVISION.md` | What changed during the revision and why |
 
 ## Data
