@@ -131,3 +131,18 @@ Holm adjustment is applied within a family of three contrasts per task.
 
 The manuscript is under review, and no licence has been chosen for this repository yet. Please contact the
 authors before reusing the code or the results.
+
+## Note on the commit history
+
+Earlier manuscript drafts were removed from the history before this repository was made public, so the commit
+hashes differ from those of the working repository in which the analysis was run. The sealed shortlists for 2025
+and 2026 are unaffected in content: `experiments/paper_revision_v1/sealed/MANIFEST.json` records SHA-256 hashes of
+the outputs, inputs, configuration and code, and those can be checked against the files here. Only the commit
+identifiers changed:
+
+| Reference | Working repository | This repository |
+|---|---|---|
+| `code_commit_before_sealing` in the manifest | `f0153d1` | `dd84d57` |
+| Tag `sealed-2025-2026` | `9b588d5` | `f458246` |
+
+The manifest itself is left exactly as it was written at sealing time.
